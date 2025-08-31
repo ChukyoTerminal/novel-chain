@@ -1,0 +1,9 @@
+src/			@antem0613
+.github/		@hayatek-jp
+.git*			@hayatek-jp
+.editorconfig	@hayatek-jp
+*.config.ts		@hayatek-jp
+*.config.mjs	@hayatek-jp
+tsconfig.json	@hayatek-jp
+package*.json	@hayatek-jp
+src/app/api/	@hayatek-jp
