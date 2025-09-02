@@ -4,20 +4,24 @@ import { Card, CardTitle, CardHeader, CardDescription, CardContent } from "@/com
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { HeroPage } from "@/components/HeroPage";
 import { Thread } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { LuHeart } from "react-icons/lu";
-//import { useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const [threads, setThreads] = useState<Thread[]>([]);
 
   const availableTags = ["ミステリー", "ファンタジー", "SF", "恋愛", "ホラー", "ライトノベル"];
 
   useEffect(() => {
+    if (status === "loading") return;
+
     const fetchData = async () => {
       try {
         const threadRes = await fetch('/api/mock/threads');
@@ -34,7 +38,7 @@ export default function Home() {
     }
 
     fetchData();
-  }, []);
+  }, [status]);
 
   // おすすめのスレッド（評価の高い順）
   const recommendedThreads = threads
@@ -82,6 +86,18 @@ export default function Home() {
     </Card>
   );
 
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen">
+        <main className="flex min-h-screen flex-col items-center justify-between p-24">
+          <p className="text-2xl">Loading...</p>
+        </main>
+      </div>
+    );
+  }
+
+  // ログインしている場合
+  if (session) {
   return (
     <div className="min-h-screen pb-16">
       <Header label="NovelChain" showBackButton={false} />
@@ -148,27 +164,9 @@ export default function Home() {
     </div>
   )
 
-  /*
-  const { data: session } = useSession();
-  // ログインしている場合
-  if (session) {
-    return (
-      <div className="min-h-screen">
-        <main className="flex min-h-screen flex-col items-center justify-between p-24">
-          <p className="text-2xl">Hello, {session.user?.name}</p>
-        </main>
-      </div>
-    );
   }
   else {
     // ログインしていない場合
-    return (
-      <div className="min-h-screen">
-        <main className="flex min-h-screen flex-col items-center justify-between p-24">
-          <p className="text-2xl">Please log in</p>
-        </main>
-      </div>
-    );
+    return <HeroPage />;
   }
-  */
 }
