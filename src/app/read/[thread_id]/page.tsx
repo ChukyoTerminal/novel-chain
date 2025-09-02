@@ -4,6 +4,7 @@ import { Post, Thread } from "@/types";
 import { ChapterCard } from "@/components/chapterCard"
 import { Card, CardTitle, CardHeader, CardDescription, CardContent } from "@/components/ui/card";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
@@ -57,19 +58,20 @@ export default function ReadPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen">
+        <div className="min-h-screen pb-16">
         <Header label="読み込み中..." />
         <main className="flex min-h-screen flex-col items-center justify-center p-24">
           <p>データを読み込んでいます...</p>
         </main>
+            <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
+      <div className="min-h-screen pb-16">
       <Header label={threadTitle || "小説を読む"} onBackClick={handleBackClick} showBackButton={true} />
-      <main className="flex flex-col items-center justify-between px-8 py-4">
+          <main className="flex flex-col items-center justify-between px-8 py-4 mb-4">
         {posts.length > 0 ? (
           <div className="w-full max-w-4xl space-y-4">
             {posts.map((post) => (
@@ -93,6 +95,7 @@ export default function ReadPage() {
           </Card>
         )}
       </main>
+          <Footer />
     </div>
   );
 }

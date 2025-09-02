@@ -17,6 +17,7 @@ export interface Thread{
     owner:User;
     posts:Post[];
     tags:string[];
+    summary: string;
     created_at:string;
     updated_at:string;
 }
