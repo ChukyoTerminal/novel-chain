@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardHeader, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LuBookOpen, LuPenTool, LuStar, LuArrowRight } from "react-icons/lu";
+import { LuBookOpen, LuPenTool, LuStar } from "react-icons/lu";
 import Link from "next/link";
 
 export function HeroPage() {
@@ -38,7 +38,7 @@ export function HeroPage() {
                         ユーザー同士がバトンを繋いで、一つの物語を共同で創り上げる場所です。
                     </p>
                     <div className="flex justify-center space-x-4">
-                        <Link href="/auth/signin">
+                        <Link href="/auth/login">
                             <Button size="super" className="text-lg px-8 py-3">
                                 リレー小説を始める
                             </Button>
