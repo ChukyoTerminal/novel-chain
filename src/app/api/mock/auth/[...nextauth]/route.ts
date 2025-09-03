@@ -1,9 +1,37 @@
 import NextAuth from "next-auth"
 import { NextAuthOptions } from "next-auth"
+import CredentialsProvider from "next-auth/providers/credentials"
+import { testUser } from "@/lib/mockData"
+import { User } from "@/types"
 
 const authOptions: NextAuthOptions = {
   providers: [
-    // 今は空のプロバイダー配列（後で設定可能）
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "メールアドレス", type: "email" },
+        password: { label: "パスワード", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
+
+        // モックデータから認証
+        const user = (testUser as User).email === credentials.email ? testUser : null;
+
+        if (user && credentials.password === "password") {
+          return {
+            id: user.id,
+            name: user.display_name,
+            email: user.email,
+            image: user.avatarUrl
+          }
+        }
+
+        return null
+      }
+    })
   ],
   pages: {
     signIn: '/auth/signin',

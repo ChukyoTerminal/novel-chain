@@ -1,6 +1,8 @@
 export interface User{
     id:string;
     name:string;
+    email: string;
+    avatarUrl?: string;
     rating:number;
     display_name:string;
     follower_count:string;

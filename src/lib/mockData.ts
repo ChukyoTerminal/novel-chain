@@ -2,9 +2,12 @@ import {Thread, User , Post} from '@/types';
 import {faker} from '@faker-js/faker';
 
 const createMockUser = (): User => {
+    const username = faker.internet.username();
     return {
         id: faker.string.uuid(),
-        name: faker.internet.username(),
+        name: username,
+        email: faker.internet.email(),
+        avatarUrl: faker.image.avatar(),
         rating: faker.number.int({min:0, max:100}),
         display_name: faker.internet.username(),
         follower_count: faker.number.int({min:0, max:1000}).toString(),
@@ -14,6 +17,10 @@ const createMockUser = (): User => {
         posts: []
     };
 };
+
+export const testUser = createMockUser();
+testUser.email = "test@example.com";
+testUser.display_name = "テストユーザー";
 
 const user1 = createMockUser();
 const user2 = createMockUser();
