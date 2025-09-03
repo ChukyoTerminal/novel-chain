@@ -1,0 +1,323 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["views", "postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  extensions = [citext]
+}
+
+enum OidcProvider {
+  GOOGLE
+
+  @@map("OIDC_PROVIDER")
+}
+
+enum UserRestrictionType {
+  TEMPORARY_BAN
+  PERMANENT_BAN
+  WRITE_PROHIBITION
+
+  @@map("USER_RESTRICTION_TYPE")
+}
+
+// 削除禁止
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique @db.Citext // MOD: Plus addressingを禁止
+  name         String    @unique @db.Citext // MOD: 英数字, アンダースコア, ドット, ハイフンのみ許可
+  displayName  String?   @map("display_name")
+  iconHash     String?   @map("icon_hash") @db.Char(40) // SHA1
+  passwordHash String?   @map("password_hash") @db.Char(60) // bcrypt
+  birthdate    DateTime? @db.Date
+  isAdmin      Boolean   @default(false) @map("is_admin")
+  isBot        Boolean   @default(false) @map("is_bot")
+  isDeleted    Boolean   @default(false) @map("is_deleted")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  oidcAuthentications  OidcAuthentication[] @relation("OidcAuthentication")
+  follows              UserFollow[]         @relation("UserFollow")
+  followers            UserFollow[]         @relation("FollowedUser")
+  threads              Thread[]             @relation("ThreadOwner")
+  threadSubscriptions  ThreadSubscription[] @relation("ThreadSubscriber")
+  lockedThreads        ThreadLock[]         @relation("ThreadLockDoer")
+  posts                Post[]               @relation("PostAuthor")
+  postViewingHistories PostViewingHistory[] @relation("PostViewer")
+  comments             PostComment[]        @relation("PostCommentAuthor")
+  rated                PostRating[]         @relation("PostRater")
+  restrictions         UserRestriction[]    @relation("RestrictedUser")
+  sentReports          Report[]             @relation("Reporter")
+  assignedReports      Report[]             @relation("Assignee")
+  reports              UserReport[]         @relation("ReportedUser")
+
+  @@map("users")
+}
+
+model OidcAuthentication {
+  id        String       @id @default(cuid())
+  userId    String       @map("user_id")
+  provider  OidcProvider
+  subject   String
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user User @relation("OidcAuthentication", fields: [userId], references: [id])
+
+  @@unique([provider, subject])
+  @@map("oidc_authentications")
+}
+
+model UserFollow {
+  id         String   @id @default(cuid())
+  followerId String   @map("follower_id")
+  followeeId String   @map("followee_id")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  follower User @relation("UserFollow", fields: [followerId], references: [id])
+  followee User @relation("FollowedUser", fields: [followeeId], references: [id])
+
+  @@unique([followerId, followeeId])
+  @@map("user_follows")
+}
+
+model Thread {
+  id                String   @id @default(cuid())
+  title             String   @unique @db.Citext
+  summary           String
+  ownerId           String   @map("owner_id")
+  isNsfw            Boolean  @default(false) @map("is_nsfw")
+  isThemeRestricted Boolean  @default(false) @map("is_theme_restricted")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  owner         User                 @relation("ThreadOwner", fields: [ownerId], references: [id])
+  tags          ThreadTag[]          @relation("TagAssignedThread")
+  subscriptions ThreadSubscription[] @relation("SubscribedThread")
+  lock          ThreadLock?          @relation("LockedThread")
+  posts         Post[]               @relation("PostThread")
+  reports       ThreadReport[]       @relation("ReportedThread")
+
+  @@map("threads")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique @db.Citext
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  threads ThreadTag[] @relation("ThreadTag")
+
+  @@map("tags")
+}
+
+model ThreadTag {
+  id        String   @id @default(cuid())
+  threadId  String   @map("thread_id")
+  tagId     String   @map("tag_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  thread Thread @relation("TagAssignedThread", fields: [threadId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation("ThreadTag", fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, tagId])
+  @@map("thread_tags")
+}
+
+model ThreadSubscription {
+  id           String   @id @default(cuid())
+  subscriberId String   @map("subscriber_id")
+  threadId     String   @map("thread_id")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  subscriber User   @relation("ThreadSubscriber", fields: [subscriberId], references: [id])
+  thread     Thread @relation("SubscribedThread", fields: [threadId], references: [id])
+
+  @@unique([subscriberId, threadId])
+  @@map("thread_subscriptions")
+}
+
+model ThreadLock {
+  id         String    @id @default(cuid())
+  threadId   String    @unique @map("thread_id")
+  lockedBy   String    @unique @map("locked_by")
+  unlockedAt DateTime? @map("unlocked_at") @db.Timestamptz()
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  thread Thread @relation("LockedThread", fields: [threadId], references: [id], onDelete: Cascade)
+  doer   User   @relation("ThreadLockDoer", fields: [lockedBy], references: [id])
+
+  @@map("thread_locks")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  threadId  String   @map("thread_id")
+  authorId  String   @map("author_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  thread           Thread               @relation("PostThread", fields: [threadId], references: [id])
+  author           User                 @relation("PostAuthor", fields: [authorId], references: [id])
+  histories        PostContent[]        @relation("PostContent")
+  viewingHistories PostViewingHistory[] @relation("ViewedPost")
+  comments         PostComment[]        @relation("PostComment")
+  ratings          PostRating[]         @relation("RatedPost")
+  reports          PostReport[]         @relation("ReportedPost")
+
+  @@map("posts")
+}
+
+model PostContent {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  post Post @relation("PostContent", fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("post_contents")
+}
+
+model PostViewingHistory {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  viewerId  String   @map("viewer_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  post   Post @relation("ViewedPost", fields: [postId], references: [id], onDelete: Cascade)
+  viewer User @relation("PostViewer", fields: [viewerId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, viewerId])
+  @@map("post_viewing_histories")
+}
+
+model PostComment {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  authorId  String   @map("author_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  post    Post            @relation("PostComment", fields: [postId], references: [id], onDelete: Cascade)
+  author  User            @relation("PostCommentAuthor", fields: [authorId], references: [id])
+  reports CommentReport[] @relation("ReportedComment")
+
+  @@unique([postId, authorId])
+  @@map("post_comments")
+}
+
+model PostRating {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  raterId   String   @map("rater_id")
+  score     Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  post  Post @relation("RatedPost", fields: [postId], references: [id], onDelete: Cascade)
+  rater User @relation("PostRater", fields: [raterId], references: [id])
+
+  @@unique([postId, raterId])
+  @@map("post_ratings")
+}
+
+model UserRestriction {
+  id        String              @id @default(cuid())
+  userId    String              @unique @map("user_id")
+  type      UserRestrictionType
+  reason    String
+  expiresAt DateTime?           @map("expires_at") @db.Timestamptz()
+  createdAt DateTime            @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user   User    @relation("RestrictedUser", fields: [userId], references: [id], onDelete: Cascade)
+  report Report? @relation("ReportedRestriction")
+
+  @@map("user_restrictions")
+}
+
+model Report {
+  id            String   @id @default(cuid())
+  reporterId    String   @map("reporter_id")
+  reason        String?
+  assigneeId    String?  @map("assignee_id")
+  restrictionId String?  @unique @map("restriction_id")
+  isTreated     Boolean  @default(false) @map("is_treated")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  reporter      User             @relation("Reporter", fields: [reporterId], references: [id])
+  assignee      User?            @relation("Assignee", fields: [assigneeId], references: [id]) // MOD: 管理者のみ
+  restriction   UserRestriction? @relation("ReportedRestriction", fields: [restrictionId], references: [id]) // 制限が解除された場合でも消さない
+  commentReport CommentReport?   @relation("CommentReport") // MOD: それぞれ排他的
+  postReport    PostReport?      @relation("PostReport")
+  threadReport  ThreadReport?    @relation("ThreadReport")
+  userReport    UserReport?      @relation("UserReport")
+
+  @@map("reports")
+}
+
+model CommentReport {
+  id        String   @id
+  commentId String   @map("comment_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  report  Report      @relation("CommentReport", fields: [id], references: [id], onDelete: Cascade)
+  comment PostComment @relation("ReportedComment", fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@map("comment_reports")
+}
+
+model PostReport {
+  id        String   @id
+  postId    String   @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  report Report @relation("PostReport", fields: [id], references: [id], onDelete: Cascade)
+  post   Post   @relation("ReportedPost", fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("post_reports")
+}
+
+model ThreadReport {
+  id        String   @id
+  threadId  String   @map("thread_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  report Report @relation("ThreadReport", fields: [id], references: [id], onDelete: Cascade)
+  thread Thread @relation("ReportedThread", fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@map("thread_reports")
+}
+
+model UserReport {
+  id        String   @id
+  userId    String   @map("reported_user_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  report       Report @relation("UserReport", fields: [id], references: [id], onDelete: Cascade)
+  reportedUser User   @relation("ReportedUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_reports")
+}
