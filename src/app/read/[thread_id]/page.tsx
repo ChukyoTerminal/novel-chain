@@ -22,7 +22,7 @@ export default function ReadPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // スレッド情報を取得してタイトルを設定
         const threadRes = await fetch('/api/mock/threads');
         if (threadRes.ok) {
@@ -58,20 +58,20 @@ export default function ReadPage() {
 
   if (loading) {
     return (
-        <div className="min-h-screen pb-16">
-        <Header label="読み込み中..." />
+      <div className="min-h-screen pb-16">
+        <Header label="読み込み中..." isFixed={true} />
         <main className="flex min-h-screen flex-col items-center justify-center p-24">
           <p>データを読み込んでいます...</p>
         </main>
-            <Footer />
+        <Footer />
       </div>
     );
   }
 
   return (
-      <div className="min-h-screen pb-16">
-      <Header label={threadTitle || "小説を読む"} onBackClick={handleBackClick} showBackButton={true} />
-          <main className="flex flex-col items-center justify-between px-8 py-4 mb-4">
+    <div className="min-h-screen pb-16">
+      <Header label={threadTitle || "小説を読む"} onBackClick={handleBackClick} showBackButton={true} isFixed={true} />
+      <main className="flex flex-col items-center justify-between px-8 py-4 mb-4">
         {posts.length > 0 ? (
           <div className="w-full max-w-4xl space-y-4">
             {posts.map((post) => (
@@ -95,7 +95,6 @@ export default function ReadPage() {
           </Card>
         )}
       </main>
-          <Footer />
     </div>
   );
 }

@@ -17,9 +17,7 @@ export function Footer() {
             boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06)'
         }}>
             <div className="flex items-center justify-center h-full max-w-screen mx-auto">
-                {/* 左側: ホームと執筆ボタン */}
                 <div className="flex flex-1 pr-4 h-full">
-                    {/* ホームボタン*/}
                     <Link href="/" className="flex-1 flex items-center h-full">
                         <Button
                             variant={isActive("/") ? "default" : "ghost"}
@@ -31,10 +29,8 @@ export function Footer() {
                         </Button>
                     </Link>
 
-                    {/* 縦線区切り */}
                     <div className="w-px h-16 bg-border self-center mx-1"></div>
 
-                    {/* 執筆ボタン*/}
                     <Link href="/write" className="flex-1 flex items-center h-full">
                         <Button
                             variant={isActive("/write") ? "default" : "ghost"}
@@ -47,19 +43,23 @@ export function Footer() {
                     </Link>
                 </div>
 
-                {/* 縦線区切り */}
                 <div className="w-px h-12 bg-border self-center"></div>
 
-                {/* 右側: プロフィールボタン */}
                 <div className="flex items-center justify-center px-4 h-full">
                     <Link href="/profile">
                         <Button
-                            variant={isActive("/profile") ? "default" : "outline"}
-                            size="sm"
-                            className="flex items-center space-x-1"
+                            variant={isActive("/profile") ? "default" : "ghost"}
+                            size="lg"
+                            className="flex items-center justify-center px-3 py-2 h-full rounded-none relative"
                         >
-                            <LuUser size={16} />
-                            <span className="text-xs">プロフィール</span>
+                            <div className="relative">
+                                <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
+                                    <LuUser size={48} />
+                                </div>
+                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-background border border-border rounded px-2 py-1">
+                                    <span className="text-xs whitespace-nowrap">ユーザー名</span>
+                                </div>
+                            </div>
                         </Button>
                     </Link>
                 </div>

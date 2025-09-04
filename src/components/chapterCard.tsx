@@ -1,5 +1,5 @@
 import { User } from "@/types";
-import { Card, CardContent,  CardDescription, CardHeader} from "./ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "./ui/card";
 
 interface ChapterCardProps {
     content: string;
@@ -9,15 +9,17 @@ interface ChapterCardProps {
 
 export function ChapterCard({ content, author, createdAt }: ChapterCardProps) {
     return (
-    <Card className="mb-4">
-        <CardHeader>
-            <CardDescription>
-                {author.display_name} - {new Date(createdAt).toLocaleDateString()}
-            </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <p>{content}</p>
-        </CardContent>
-    </Card>
+        <div>
+            <Card className="mb-4 z-20">
+                <CardHeader>
+                    <CardDescription>
+                        {author.display_name} - {new Date(createdAt).toLocaleDateString()}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p>{content}</p>
+                </CardContent>
+            </Card>
+        </div>
     );
 }
