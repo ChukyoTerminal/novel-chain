@@ -7,6 +7,14 @@ import { prisma } from '@/lib/prisma';
 import { getTemporaryUserName } from '@/utils/user';
 
 
+// JWTのsubをnon-nullableにする
+declare module 'next-auth/jwt' {
+  interface JWT {
+    sub: string;
+  }
+}
+
+
 /**
  * NextAuthのプロバイダーの型定義。
  */
