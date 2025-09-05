@@ -1,20 +1,20 @@
 'use client'
 
-import { Post, Thread } from "@/types";
-import { ChapterCard } from "@/components/chapterCard"
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from "@/components/ui/card";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Post, Thread } from '@/types';
+import { ChapterCard } from '@/components/chapterCard'
+import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 
 export default function ReadPage() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [threadTitle, setThreadTitle] = useState<string>("");
+  const [threadTitle, setThreadTitle] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const params = useParams();
+  const parameters = useParams();
   const router = useRouter();
-  const threadId = params.thread_id as string;
+  const threadId = parameters.thread_id as string;
 
   useEffect(() => {
     if (!threadId) return;
@@ -24,9 +24,9 @@ export default function ReadPage() {
         setLoading(true);
 
         // スレッド情報を取得してタイトルを設定
-        const threadRes = await fetch('/api/mock/threads');
-        if (threadRes.ok) {
-          const threadData = await threadRes.json();
+        const threadResponse = await fetch('/api/mock/threads');
+        if (threadResponse.ok) {
+          const threadData = await threadResponse.json();
           const currentThread = threadData.threads.find((t: Thread) => t.id.toString() === threadId);
           if (currentThread) {
             setThreadTitle(currentThread.title);
@@ -34,16 +34,16 @@ export default function ReadPage() {
         }
 
         // ポスト一覧を取得
-        const postsRes = await fetch(`/api/mock/threads/${threadId}/posts?limit=10&offset=0`);
-        if (postsRes.ok) {
-          const postsData = await postsRes.json();
+        const postsResponse = await fetch(`/api/mock/threads/${threadId}/posts?limit=10&offset=0`);
+        if (postsResponse.ok) {
+          const postsData = await postsResponse.json();
           setPosts(postsData.posts);
           console.log(postsData.posts);
         } else {
-          console.error("Failed to fetch posts");
+          console.error('Failed to fetch posts');
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      } catch (e) {
+        console.error('Error fetching data:', e);
       } finally {
         setLoading(false);
       }
@@ -70,7 +70,7 @@ export default function ReadPage() {
 
   return (
     <div className="min-h-screen pb-16">
-      <Header label={threadTitle || "小説を読む"} onBackClick={handleBackClick} showBackButton={true} isFixed={true} />
+      <Header label={threadTitle || '小説を読む'} onBackClick={handleBackClick} showBackButton={true} isFixed={true} />
       <main className="flex flex-col items-center justify-between px-8 py-4 mb-4">
         {posts.length > 0 ? (
           <div className="w-full max-w-4xl space-y-4">

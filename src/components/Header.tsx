@@ -1,14 +1,15 @@
-import { Button } from "./ui/button";
-import { LuChevronLeft } from "react-icons/lu";
+/* eslint-disable max-len */
+import { Button } from './ui/button';
+import { LuChevronLeft } from 'react-icons/lu';
 
-interface HeaderProps {
+interface HeaderProperties {
   label: string;
   onBackClick?: () => void;
   showBackButton?: boolean;
   isFixed?: boolean;
 }
 
-export function Header({ label, onBackClick, showBackButton = false, isFixed = false }: HeaderProps) {
+export function Header({ label, onBackClick, showBackButton = false, isFixed = false }: HeaderProperties) {
   return (
     <header className={`w-full p-4 border-b mb-4 flex items-center justify-between ${isFixed ? 'fixed top-0 left-0 right-0 bg-white shadow' : ''}`}>
       {showBackButton && (

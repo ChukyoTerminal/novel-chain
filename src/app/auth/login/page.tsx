@@ -1,14 +1,14 @@
 'use client'
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { LuBookOpen, LuArrowLeft } from "react-icons/lu";
-import Link from "next/link";
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { LuBookOpen, LuArrowLeft } from 'react-icons/lu';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -19,8 +19,8 @@ export default function LoginPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+    setFormData(previous => ({
+      ...previous,
       [name]: value
     }));
   };
@@ -40,8 +40,8 @@ export default function LoginPage() {
       } else {
         alert('ログインに失敗しました。メールアドレスまたはパスワードを確認してください。');
       }
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (e_) {
+      console.error('Login error:', e_);
       alert('ログインエラーが発生しました。');
     }
   };

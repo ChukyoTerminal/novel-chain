@@ -1,13 +1,13 @@
 'use client'
 
-import { SessionProvider } from "next-auth/react"
-import { ReactNode } from "react"
+import { SessionProvider } from 'next-auth/react'
+import { ReactNode } from 'react'
 
-interface ProvidersProps {
+interface ProvidersProperties {
   children: ReactNode
 }
 
-export function Providers({ children }: ProvidersProps) {
+export function Providers({ children }: ProvidersProperties) {
   return (
     <SessionProvider basePath="/api/mock/auth">
       {children}

@@ -1,36 +1,34 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
-import { useState } from "react";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { LuPlus, LuPenTool, LuSend } from "react-icons/lu";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react';
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { LuSend } from 'react-icons/lu';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function WritePage() {
-    const [content, setContent] = useState("");
-    const maxLength = 500;
+  const [content, setContent] = useState('');
+  const maxLength = 500;
 
-    const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const newContent = e.target.value;
-        if (newContent.length <= maxLength) {
-            setContent(newContent);
-        }
-    };
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    if (newContent.length <= maxLength) {
+      setContent(newContent);
+    }
+  };
 
-    const handleSubmit = () => {
-        // 投稿処理（未実装）
-        console.log('投稿内容:', content);
-        alert('投稿機能は未実装です');
-    };
+  const handleSubmit = () => {
+    // 投稿処理（未実装）
+    console.log('投稿内容:', content);
+    alert('投稿機能は未実装です');
+  };
 
-    return (
-        <div className="min-h-screen pb-16">
-            <style dangerouslySetInnerHTML={{
-                __html: `
+  return (
+    <div className="min-h-screen pb-16">
+      <style dangerouslySetInnerHTML={{
+        __html: `
                     :root {
                         /* 横線の調整変数 */
                         --line-height: 32px;        /* 行の高さ（横線の間隔） */
@@ -64,55 +62,55 @@ export default function WritePage() {
                         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
                     }
                 `
-            }} />
-            <Header label="執筆" showBackButton={false} />
-            <main className="flex px-4 gap-6 max-w-8xl mx-auto h-[calc(100vh-140px)]">
-                <div className="w-80 flex-shrink-0" />
-                <div className="flex-1 flex justify-center">
-                    <Card className="p-6 w-full max-w-7xl h-full flex flex-col">
-                        <CardContent className="space-y-4 flex-1 flex flex-col">
-                            <div className="space-y-2 flex-1 flex flex-col">
-                                <Textarea
-                                    id="content"
-                                    value={content}
-                                    onChange={handleContentChange}
-                                    className="flex-1 resize-none manuscript-textarea border-2 border-gray-300"
-                                    maxLength={maxLength}
-                                    style={{
-                                        backgroundAttachment: 'local'
-                                    }}
-                                />
+      }} />
+      <Header label="執筆" showBackButton={false} />
+      <main className="flex px-4 gap-6 max-w-8xl mx-auto h-[calc(100vh-140px)]">
+        <div className="w-80 flex-shrink-0" />
+        <div className="flex-1 flex justify-center">
+          <Card className="p-6 w-full max-w-7xl h-full flex flex-col">
+            <CardContent className="space-y-4 flex-1 flex flex-col">
+              <div className="space-y-2 flex-1 flex flex-col">
+                <Textarea
+                  id="content"
+                  value={content}
+                  onChange={handleContentChange}
+                  className="flex-1 resize-none manuscript-textarea border-2 border-gray-300"
+                  maxLength={maxLength}
+                  style={{
+                    backgroundAttachment: 'local'
+                  }}
+                />
 
-                            </div>
+              </div>
 
-                            <div className="flex justify-between pt-4 border-t">
-                                <div className="flex justify-between text-sm text-muted-foreground mt-2">
-                                    <span>文字数: {content.length}/{maxLength}</span>
-                                    <span className={content.length >= maxLength * 0.9 ? "text-orange-500" : ""}>
-                                        {content.length >= maxLength ? "文字数上限に達しました" : ""}
-                                    </span>
-                                </div>
-                                <Button
-                                    onClick={handleSubmit}
-                                    disabled={content.trim().length === 0}
-                                    className="flex items-center gap-2"
-                                >
-                                    <LuSend size={16} />
-                                    投稿する
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+              <div className="flex justify-between pt-4 border-t">
+                <div className="flex justify-between text-sm text-muted-foreground mt-2">
+                  <span>文字数: {content.length}/{maxLength}</span>
+                  <span className={content.length >= maxLength * 0.9 ? 'text-orange-500' : ''}>
+                    {content.length >= maxLength ? '文字数上限に達しました' : ''}
+                  </span>
                 </div>
-                <div className="w-80 flex-shrink-0">
-                    <Card className="p-6 h-fit sticky top-4">
-                        <CardContent className="text-center">
-                            AIツール
-                        </CardContent>
-                    </Card>
-                </div>
-            </main>
-            <Footer />
+                <Button
+                  onClick={handleSubmit}
+                  disabled={content.trim().length === 0}
+                  className="flex items-center gap-2"
+                >
+                  <LuSend size={16} />
+                  投稿する
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-    );
+        <div className="w-80 flex-shrink-0">
+          <Card className="p-6 h-fit sticky top-4">
+            <CardContent className="text-center">
+              AIツール
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
 }

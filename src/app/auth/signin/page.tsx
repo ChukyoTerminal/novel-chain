@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { LuBookOpen, LuArrowLeft } from "react-icons/lu";
-import Link from "next/link";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { LuBookOpen, LuArrowLeft } from 'react-icons/lu';
+import Link from 'next/link';
 
 export default function SignInPage() {
   const [formData, setFormData] = useState({
@@ -19,8 +19,8 @@ export default function SignInPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+    setFormData(previous => ({
+      ...previous,
       [name]: value
     }));
   };

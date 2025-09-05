@@ -1,17 +1,17 @@
 'use client'
 
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { LuUser, LuPencil as LuEdit, LuSettings, LuLogOut } from "react-icons/lu";
-import { useRouter } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
-import { testUser } from "@/lib/mockData";
-import { useEffect, useState } from "react";
-import { User } from "@/types";
-import Image from "next/image";
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
+import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { LuUser, LuPencil as LuEdit, LuSettings, LuLogOut } from 'react-icons/lu';
+import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
+import { testUser } from '@/lib/mockData';
+import { useEffect, useState } from 'react';
+import { User } from '@/types';
+import Image from 'next/image';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -35,12 +35,13 @@ export default function ProfilePage() {
     router.push('/');
   };
 
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   const handleEdit = () => {
     // 編集ページへの遷移（未実装）
     alert('編集機能は未実装です');
   };
 
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen pb-16">
         <Header label="プロフィール" onBackClick={handleBackClick} showBackButton={true} />
@@ -116,7 +117,7 @@ export default function ProfilePage() {
                 {currentUser.posts.length > 0 ? (
                   `${currentUser.posts.length}件の投稿をしています。`
                 ) : (
-                  "まだ投稿がありません。"
+                  'まだ投稿がありません。'
                 )}
                 {currentUser.threads.length > 0 && (
                   ` ${currentUser.threads.length}件のスレッドを作成しています。`
