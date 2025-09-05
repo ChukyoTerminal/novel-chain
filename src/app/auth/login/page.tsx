@@ -1,51 +1,13 @@
+/* eslint-disable max-len */
 'use client'
 
-import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { LuBookOpen, LuArrowLeft } from 'react-icons/lu';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const router = useRouter();
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(previous => ({
-      ...previous,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const result = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-      });
-
-      if (result?.ok) {
-        router.push('/');
-      } else {
-        alert('ログインに失敗しました。メールアドレスまたはパスワードを確認してください。');
-      }
-    } catch (e_) {
-      console.error('Login error:', e_);
-      alert('ログインエラーが発生しました。');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* ヘッダー */}
@@ -68,49 +30,12 @@ export default function LoginPage() {
               NovelChainにログインしてリレー小説を楽しみましょう
             </CardDescription>
           </CardHeader>
-          
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* メールアドレス */}
-              <div>
-                <Label htmlFor="email">メールアドレス *</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="メールアドレスを入力"
-                  required
-                />
-              </div>
-
-              {/* パスワード */}
-              <div>
-                <Label htmlFor="password">パスワード *</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="パスワードを入力"
-                  required
-                />
-              </div>
-
-              {/* ログインボタン */}
-              <Button type="submit" className="w-full mt-6">
-                ログイン
-              </Button>
-            </form>
-
-            {/* パスワードを忘れた場合のリンク */}
-            <div className="text-center mt-4">
-              <Link href="#" className="text-sm text-blue-600 hover:underline">
-                パスワードを忘れた場合
-              </Link>
-            </div>
+            {/* Googleログインボタン */}
+            <Button onClick={() => signIn('google', { callbackUrl:'/' })} className="w-full mb-6" variant="outline">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24" height="24" className="inline-block mr-2 align-middle"><path fill="#4285F4" d="M24 9.5c3.54 0 6.72 1.22 9.22 3.22l6.9-6.9C36.36 2.34 30.55 0 24 0 14.61 0 6.27 5.7 2.13 14.1l8.06 6.27C12.6 13.16 17.87 9.5 24 9.5z"/><path fill="#34A853" d="M46.1 24.5c0-1.64-.15-3.22-.43-4.75H24v9.02h12.44c-.54 2.9-2.18 5.36-4.64 7.02l7.18 5.59C43.73 37.16 46.1 31.3 46.1 24.5z"/><path fill="#FBBC05" d="M10.19 28.37c-1.13-3.36-1.13-6.97 0-10.33l-8.06-6.27C.7 16.61 0 20.19 0 24c0 3.81.7 7.39 2.13 10.23l8.06-6.27z"/><path fill="#EA4335" d="M24 48c6.55 0 12.36-2.16 16.98-5.89l-7.18-5.59c-2.01 1.35-4.59 2.15-7.3 2.15-6.13 0-11.4-3.66-13.81-8.87l-8.06 6.27C6.27 42.3 14.61 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+              Googleでログイン
+            </Button>
 
             {/* 新規登録リンク */}
             <div className="text-center mt-6 pt-6 border-t">

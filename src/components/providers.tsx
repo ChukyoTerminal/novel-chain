@@ -9,7 +9,7 @@ interface ProvidersProperties {
 
 export function Providers({ children }: ProvidersProperties) {
   return (
-    <SessionProvider basePath="/api/mock/auth">
+    <SessionProvider basePath="/api/auth">
       {children}
     </SessionProvider>
   )

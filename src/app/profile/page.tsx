@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 'use client'
 
 import { Header } from '@/components/header';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LuUser, LuPencil as LuEdit, LuSettings, LuLogOut } from 'react-icons/lu';
 import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, signOut, signIn } from 'next-auth/react';
 import { testUser } from '@/lib/mockData';
 import { useEffect, useState } from 'react';
 import { User } from '@/types';
@@ -60,8 +61,9 @@ export default function ProfilePage() {
         <main className="flex flex-col px-40 space-y-8 mb-4">
           <div className="text-center py-8">
             <p>ログインが必要です</p>
-            <Button onClick={() => router.push('/auth/login')} className="mt-4">
-              ログイン
+            <Button onClick={() => signIn('google', { callbackUrl: '/profile' })} className="mt-4" variant="outline">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24" height="24" className="inline-block mr-2 align-middle"><path fill="#4285F4" d="M24 9.5c3.54 0 6.72 1.22 9.22 3.22l6.9-6.9C36.36 2.34 30.55 0 24 0 14.61 0 6.27 5.7 2.13 14.1l8.06 6.27C12.6 13.16 17.87 9.5 24 9.5z"/><path fill="#34A853" d="M46.1 24.5c0-1.64-.15-3.22-.43-4.75H24v9.02h12.44c-.54 2.9-2.18 5.36-4.64 7.02l7.18 5.59C43.73 37.16 46.1 31.3 46.1 24.5z"/><path fill="#FBBC05" d="M10.19 28.37c-1.13-3.36-1.13-6.97 0-10.33l-8.06-6.27C.7 16.61 0 20.19 0 24c0 3.81.7 7.39 2.13 10.23l8.06-6.27z"/><path fill="#EA4335" d="M24 48c6.55 0 12.36-2.16 16.98-5.89l-7.18-5.59c-2.01 1.35-4.59 2.15-7.3 2.15-6.13 0-11.4-3.66-13.81-8.87l-8.06 6.27C6.27 42.3 14.61 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+              Googleでログイン
             </Button>
           </div>
         </main>
@@ -79,17 +81,13 @@ export default function ProfilePage() {
             <CardHeader className="flex flex-row items-center space-y-0 pb-4">
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center overflow-hidden">
-                  {currentUser.avatarUrl ? (
-                    <Image
-                      src={currentUser.avatarUrl}
-                      alt={currentUser.display_name}
-                      width={64}
-                      height={64}
-                      className="rounded-full object-cover"
-                    />
-                  ) : (
-                    <LuUser size={32} className="text-muted-foreground" />
-                  )}
+                  <Image
+                    src={'/file.svg'}
+                    alt="ユーザーアイコン"
+                    width={64}
+                    height={64}
+                    className="rounded-full object-cover"
+                  />
                 </div>
                 <div className="flex-1">
                   <CardTitle className="text-2xl">{currentUser.display_name}</CardTitle>

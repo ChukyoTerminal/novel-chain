@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,14 +15,6 @@ export function HeroPage() {
             <LuBookOpen size={32} className="text-blue-600" />
             <h1 className="text-2xl font-bold text-gray-900">NovelChain</h1>
           </div>
-          <div className="flex space-x-3">
-            <Link href="/auth/login">
-              <Button variant="ghost">ログイン</Button>
-            </Link>
-            <Link href="/auth/signin">
-              <Button>新規登録</Button>
-            </Link>
-          </div>
         </div>
       </header>
 
@@ -37,12 +30,16 @@ export function HeroPage() {
             NovelChainで新しい創作体験を始めませんか？
             ユーザー同士がバトンを繋いで、一つの物語を共同で創り上げる場所です。
           </p>
-          <div className="flex justify-center space-x-4">
-            <Link href="/auth/login">
-              <Button size="super" className="text-lg px-8 py-3">
-                リレー小説を始める
-              </Button>
-            </Link>
+          <div className="flex justify-center">
+            <Button
+              size="super"
+              className="text-lg px-8 py-3"
+              variant="outline"
+              onClick={() => import('next-auth/react').then(module_ => module_.signIn('google', { callbackUrl: '/' }))}
+            >
+              <svg xmlns="/Google_G_logo.svg" viewBox="0 0 48 48" width="24" height="24" className="inline-block mr-2 align-middle"><path fill="#4285F4" d="M24 9.5c3.54 0 6.72 1.22 9.22 3.22l6.9-6.9C36.36 2.34 30.55 0 24 0 14.61 0 6.27 5.7 2.13 14.1l8.06 6.27C12.6 13.16 17.87 9.5 24 9.5z"/><path fill="#34A853" d="M46.1 24.5c0-1.64-.15-3.22-.43-4.75H24v9.02h12.44c-.54 2.9-2.18 5.36-4.64 7.02l7.18 5.59C43.73 37.16 46.1 31.3 46.1 24.5z"/><path fill="#FBBC05" d="M10.19 28.37c-1.13-3.36-1.13-6.97 0-10.33l-8.06-6.27C.7 16.61 0 20.19 0 24c0 3.81.7 7.39 2.13 10.23l8.06-6.27z"/><path fill="#EA4335" d="M24 48c6.55 0 12.36-2.16 16.98-5.89l-7.18-5.59c-2.01 1.35-4.59 2.15-7.3 2.15-6.13 0-11.4-3.66-13.81-8.87l-8.06 6.27C6.27 42.3 14.61 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+              Googleでサインイン
+            </Button>
           </div>
         </section>
 
@@ -96,11 +93,7 @@ export function HeroPage() {
           <p className="text-xl mb-8 opacity-90">
             今すぐNovelChainに参加して、物語の続きを紡いでみませんか？
           </p>
-          <Link href="/auth/signin">
-            <Button size="super" variant="secondary" className="text-lg px-8 py-3">
-              リレー小説に参加する
-            </Button>
-          </Link>
+          {/* Googleサインインボタンのみ表示 */}
         </section>
       </main>
 
