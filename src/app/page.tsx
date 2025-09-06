@@ -9,6 +9,7 @@ import { Thread } from '@/types';
 import { ThreadCard } from '@/components/threadCard';
 import { useSession } from 'next-auth/react';
 import { BookShelfSeparator } from '@/components/bookShelfSeparator';
+import { ColorSchemeToggle } from '@/components/colorSchemeToggle';
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -65,12 +66,17 @@ export default function Home() {
 
   // ログインしている場合とそうでない場合を三項演算子で分岐
   return session ? (
-    <div className="min-h-screen pb-16 overflow-x-hidden bg-amber-50">
+    <div className="min-h-screen pb-16 overflow-x-hidden bg-amber-50 dark:bg-gray-700 max-w-screen">
       <Header label="NovelChain" showBackButton={false} />
-      <main className="flex flex-col px-40 space-y-8 mb-4">
+      <main className="flex flex-col space-y-8 mb-4">
+        {/* テーマ切り替えボタン */}
+        <div className="flex justify-end mt-4">
+          {/* ColorSchemeToggle をインポートして使用 */}
+          <ColorSchemeToggle />
+        </div>
         {threads.length > 0 ? (
           <>
-            <section>
+            <section className="px-40">
               <h2 className="text-2xl font-bold mb-4">おすすめのスレッド</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {recommendedThreads.map((thread) => (
@@ -79,10 +85,10 @@ export default function Home() {
               </div>
             </section>
 
-            <BookShelfSeparator width="220" />
+            <BookShelfSeparator width="400" />
 
             {/* 新着のスレッド */}
-            <section>
+            <section className="px-40 mx-auto">
               <h2 className="text-2xl font-bold mb-4">新着のスレッド</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {newThreads.map((thread) => (
@@ -91,7 +97,7 @@ export default function Home() {
               </div>
             </section>
 
-            <BookShelfSeparator width="220" />
+            <BookShelfSeparator width="300" />
 
             {/* タグ別のスレッド */}
             {availableTags.map((tag, index) => {
@@ -101,7 +107,7 @@ export default function Home() {
               return (
                 <div key={tag}>
                   {index > 0 && <BookShelfSeparator width="220" />}
-                  <section>
+                  <section className="px-40">
                     <h2 className="text-2xl font-bold mb-4">{tag}</h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {tagThreads.map((thread) => (

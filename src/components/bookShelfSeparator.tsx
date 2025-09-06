@@ -14,9 +14,9 @@ const BookShelfLeg: React.FC<BookShelfLegProperties> = ({ flip }) => (
   </div>
 );
 
-export function BookShelfSeparator({ width = '80' }: BookShelfSeparatorProperties) {
+export function BookShelfSeparator({ width = '220' }: BookShelfSeparatorProperties) {
   return (
-    <div className={`relative right-10 bottom-3 mb-2 w-${width} justify-center mx-0`}>
+    <div className={`relative overflow-visible mx-25 bottom-3 mb-2 w-${width} justify-center`}>
       <div className='h-4 w-full bg-orange-300 shadow' />
       <div className='h-2 w-full bg-neutral-600 border-bg [clip-path:polygon(0_0,100%_0,95%_100%,5%_100%)]' />
       <div className='relative flex justify-between w-200 -top-2 mx-auto'>

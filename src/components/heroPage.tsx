@@ -4,6 +4,7 @@ import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { LuBookOpen, LuPenTool, LuStar } from 'react-icons/lu';
 import Link from 'next/link';
+import Logo from './logo';
 
 export function HeroPage() {
   return (
@@ -11,9 +12,8 @@ export function HeroPage() {
       {/* ヘッダー */}
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <LuBookOpen size={32} className="text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">NovelChain</h1>
+          <div className="flex items-center space-x-2 w-60">
+            <Logo />
           </div>
         </div>
       </header>
