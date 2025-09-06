@@ -1,6 +1,6 @@
 'use client'
 
-import { Post, Thread } from '@/types';
+import { Post } from '@/types';
 import { ChapterCard } from '@/components/chapterCard'
 import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
 import { Header } from '@/components/header';
@@ -14,7 +14,7 @@ export default function ReadPage() {
   const [loading, setLoading] = useState(true);
   const parameters = useParams();
   const router = useRouter();
-  const threadId = parameters.thread_id as string;
+  const threadId = parameters.threadId as string;
 
   useEffect(() => {
     if (!threadId) return;
@@ -24,17 +24,16 @@ export default function ReadPage() {
         setLoading(true);
 
         // スレッド情報を取得してタイトルを設定
-        const threadResponse = await fetch('/api/mock/threads');
+        const threadResponse = await fetch(`/api/threads/${threadId}`);
         if (threadResponse.ok) {
           const threadData = await threadResponse.json();
-          const currentThread = threadData.threads.find((t: Thread) => t.id.toString() === threadId);
-          if (currentThread) {
-            setThreadTitle(currentThread.title);
+          if (threadData && threadData.title) {
+            setThreadTitle(threadData.title);
           }
         }
 
-        // ポスト一覧を取得
-        const postsResponse = await fetch(`/api/mock/threads/${threadId}/posts?limit=10&offset=0`);
+        // 投稿一覧を取得
+        const postsResponse = await fetch(`/api/threads/${threadId}/posts?limit=10&offset=0`);
         if (postsResponse.ok) {
           const postsData = await postsResponse.json();
           setPosts(postsData.posts);
@@ -47,8 +46,7 @@ export default function ReadPage() {
       } finally {
         setLoading(false);
       }
-    }
-
+    };
     fetchData();
   }, [threadId]);
 

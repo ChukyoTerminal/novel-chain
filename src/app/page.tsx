@@ -21,19 +21,16 @@ export default function Home() {
 
     const fetchData = async () => {
       try {
-        const threadResponse = await fetch('/api/mock/threads');
-
-        if (threadResponse.ok) {
-          const threadData = await threadResponse.json();
-          setThreads(threadData.threads);
-          console.log(threadData.threads);
+        const response = await fetch('/api/threads');
+        if (response.ok) {
+          const data = await response.json();
+          setThreads(data.threads);
+          console.log(data.threads);
         }
-      }
-      catch (e) {
+      } catch (e) {
         console.error('Error fetching data:', e);
       }
-    }
-
+    };
     fetchData();
   }, [status]);
 
@@ -128,6 +125,25 @@ export default function Home() {
           </Card>
         )}
         <div className="h-20" />
+        {/* デバッグ用：全スレッドロック解除ボタン */}
+        <div className="flex justify-center mt-8">
+          <button
+            className="px-6 py-3 bg-red-600 text-white rounded shadow hover:bg-red-700"
+            onClick={async () => {
+              if (!globalThis.confirm('本当に全スレッドのロックを解除しますか？')) return;
+              let success = 0;
+              for (const thread of threads) {
+                try {
+                  const response = await fetch(`/api/threads/${thread.id}/lock`, { method: 'DELETE' });
+                  if (response.ok) success++;
+                } catch {}
+              }
+              alert(`ロック解除完了: ${success}件`);
+            }}
+          >
+            すべてのスレッドのロックを解除（デバッグ）
+          </button>
+        </div>
       </main>
       <Footer />
     </div>
