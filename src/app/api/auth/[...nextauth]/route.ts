@@ -1,12 +1,12 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials'
+import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 
 import { OidcProvider } from '@prisma/client';
 
 import { prisma } from '@/lib/prisma';
 import { sha1sum } from '@/utils/hash';
-import { hashPassword } from '@/utils/password';
+import { matchPassword } from '@/utils/password';
 import { getTemporaryUserName } from '@/utils/user';
 
 
@@ -51,7 +51,10 @@ const authOptions: NextAuthOptions = {
           // プライバシー保護のためハッシュ化してログ出力
           console.warn(`Failed login attempt with unknown email: ${await sha1sum(credentials.email)}`);
           return null;
-        } else if (user.passwordHash === await hashPassword(credentials.password)) {
+        } else if (!user.passwordHash) {
+          console.warn(`User attempted to sign in with credentials but has no password set: ${user.id}`);
+          return null;
+        } else if (await matchPassword(credentials.password, user.passwordHash)) {
           if (user.isDeleted) {
             console.warn(`Deleted user attempted to sign in: ${user.id}`);
             return null;
@@ -59,8 +62,10 @@ const authOptions: NextAuthOptions = {
             console.log(`User signed in via credentials: ${user.id}`);
             return { id: user.id, email: credentials.email };
           }
+        } else {
+          console.warn(`Failed login attempt with incorrect password: ${user.id}`);
+          return null;
         }
-        return null;
       }
     }),
     GoogleProvider({
@@ -146,14 +151,6 @@ const authOptions: NextAuthOptions = {
         token.sub = user.id;
       }
       return token;
-    },
-    async session({ session, token }) {
-      if (token?.sub) {
-        session.user = session.user || {};
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (session.user as any).id = token.sub;
-      }
-      return session;
     }
   },
 };
