@@ -33,7 +33,7 @@ type ClientType = {
 const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'text', placeholder: 'you@example.com' },
         password: { label: 'Password', type: 'password' }
@@ -146,6 +146,14 @@ const authOptions: NextAuthOptions = {
         token.sub = user.id;
       }
       return token;
+    },
+    async session({ session, token }) {
+      if (token?.sub) {
+        session.user = session.user || {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (session.user as any).id = token.sub;
+      }
+      return session;
     }
   },
 };

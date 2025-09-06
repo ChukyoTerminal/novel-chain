@@ -41,7 +41,8 @@ export default function WritePage() {
       // ユーザー情報取得（NextAuth）
       const sessionResponse = await fetch('/api/auth/session');
       const session = sessionResponse.ok ? await sessionResponse.json() : null;
-      const userId = session?.user?.id || session?.user?.email || '';
+      const userId = session?.user?.id;
+      console.log(session)
       console.log('[filterThreads] 現在のユーザーID:', userId);
       // 最新投稿が自分のもの or ロックされているものを除外
       const filtered: Thread[] = [];
@@ -55,7 +56,7 @@ export default function WritePage() {
             const postData = await postResponse.json();
             const posts = postData?.posts || [];
             const lastPost = posts.at(-1);
-            latestPostUser = lastPost?.userId || lastPost?.email || '';
+            latestPostUser = lastPost?.author?.id;
             logMessage += `, 最新投稿ユーザー=${latestPostUser}`;
             logMessage += `, 現在のユーザーID=${userId}`;
           } else {
@@ -70,8 +71,6 @@ export default function WritePage() {
           continue;
         }
         // ロック判定
-        // eslint-disable-next-line sonarjs/no-commented-code
-        /*
         try {
           const lockResponse = await fetch(`/api/threads/${thread.id}/lock`, { method: 'POST' });
           logMessage += `, ロック判定status=${lockResponse.status}`;
@@ -87,7 +86,6 @@ export default function WritePage() {
           console.log(logMessage);
           continue;
         }
-        */
         logMessage += ' →候補に追加';
         console.log(logMessage);
         filtered.push(thread);
@@ -185,20 +183,7 @@ export default function WritePage() {
                       key={thread.id}
                       className="w-full text-left"
                       variant="outline"
-                      onClick={async () => {
-                        // 再度ロックAPIで判定
-                        try {
-                          const lockResponse = await fetch(`/api/threads/${thread.id}/lock`, { method: 'POST' });
-                          if (lockResponse.status === 204) {
-                            setShowModal(false);
-                            router.push(`/write/${thread.id}`);
-                          } else {
-                            alert('このスレッドはロックされています');
-                          }
-                        } catch {
-                          alert('ロック判定に失敗しました');
-                        }
-                      }}
+                      onClick={async () => {setShowModal(false); router.push(`/write/${thread.id}`); }}
                     >
                       {thread.title}
                     </Button>

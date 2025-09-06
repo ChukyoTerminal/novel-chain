@@ -69,7 +69,7 @@ export default function ReadPage() {
   return (
     <div className="min-h-screen pb-16">
       <Header label={threadTitle || '小説を読む'} onBackClick={handleBackClick} showBackButton={true} isFixed={true} />
-      <main className="flex flex-col items-center justify-between px-8 py-4 mb-4">
+      <main className="flex flex-col items-center justify-between px-8 py-4 mb-4 pt-24">
         {posts.length > 0 ? (
           <div className="w-full max-w-4xl space-y-4">
             {posts.map((post) => (

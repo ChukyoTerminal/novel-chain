@@ -14,6 +14,7 @@ export default function WriteThreadPage() {
   const maxLength = 500;
   const minLength = 100;
   const { threadId } = useParams();
+  let title = '続きの投稿';
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
@@ -45,6 +46,17 @@ export default function WriteThreadPage() {
       alert('通信エラーが発生しました');
     }
   };
+
+  async function fetchThreadTitle() {
+    const threadData = await fetch(`/api/threads/${threadId}`);
+
+    if(threadData.ok) {
+      const thread = await threadData.json();
+      title = thread.title;
+    }
+  }
+
+  fetchThreadTitle();
 
   return (
     <div className="min-h-screen pb-16">
@@ -84,7 +96,7 @@ export default function WriteThreadPage() {
                     }
                 `
       }} />
-      <Header label="続きの投稿" showBackButton={true} />
+      <Header label={title} showBackButton={true} />
       <main className="flex px-4 gap-6 max-w-8xl mx-auto h-[calc(100vh-140px)] mb-8">
         <div className="w-80 flex-shrink-0" />
         <div className="flex-1 flex justify-center">
