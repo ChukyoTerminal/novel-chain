@@ -1,9 +1,12 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google';
 
 import { OidcProvider } from '@prisma/client';
 
 import { prisma } from '@/lib/prisma';
+import { sha1sum } from '@/utils/hash';
+import { hashPassword } from '@/utils/password';
 import { getTemporaryUserName } from '@/utils/user';
 
 
@@ -29,6 +32,37 @@ type ClientType = {
  */
 const authOptions: NextAuthOptions = {
   providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'text', placeholder: 'you@example.com' },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        // 受け取るパスワードはSHA-256でハッシュ化されたものを想定
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+        const user = await prisma.user.findUnique({
+          select: { id: true, passwordHash: true, isDeleted: true },
+          where: { email: credentials.email }
+        });
+        if (!user) {
+          // プライバシー保護のためハッシュ化してログ出力
+          console.warn(`Failed login attempt with unknown email: ${await sha1sum(credentials.email)}`);
+          return null;
+        } else if (user.passwordHash === await hashPassword(credentials.password)) {
+          if (user.isDeleted) {
+            console.warn(`Deleted user attempted to sign in: ${user.id}`);
+            return null;
+          } else {
+            console.log(`User signed in via credentials: ${user.id}`);
+            return { id: user.id, email: credentials.email };
+          }
+        }
+        return null;
+      }
+    }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -41,59 +75,67 @@ const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
-      // Google SSOでログインしたアカウントが登録されているか検証
-      if (account?.provider === 'google') {
-        const registration = await prisma.user.findFirst({
-          select: {
-            id: true,
-            isDeleted: true
-          },
-          where: {
-            oidcAuthentications: {
-              some: {
-                provider: OidcProvider.GOOGLE,
-                subject: account.providerAccountId
-              }
-            }
-          },
-        });
-        if (registration) {
-          if (registration.isDeleted) {
-            console.warn(`Deleted user attempted to sign in via Google SSO: ${registration.id}`);
-            return false;
-          }
-          user.id = registration.id;
-          console.log(`User signed in via Google SSO: ${registration.id}`);
+      switch (account?.provider) {
+        case 'credentials': {
+          // Credentialsプロバイダーはauthorizeで検証済みなのでそのまま通す
           return true;
-        } else {
-          // 登録されていない場合は新規登録
-          if (!user.name || !user.email || !user.image) {
-            console.error('Received incomplete user data from Google SSO');
-            return false;
-          }
-          let temporaryName = await getTemporaryUserName(user.email);
-          // idをselectする必要は無いが、取得するカラムを減らすために指定
-          while (await prisma.user.findUnique({ select: { id: true }, where: { name: temporaryName } })) {
-            temporaryName = await getTemporaryUserName(temporaryName);
-          }
-          const row = await prisma.user.create({
-            data: {
-              email: user.email,
-              name: temporaryName,
-              displayName: user.name,
-              iconHash: null, // TODO: 画像の保存(Vercel Blob)とハッシュ化
+        }
+        case 'google': {
+          // Google SSOでログインしたアカウントが登録されているか検証
+          const registration = await prisma.user.findFirst({
+            select: {
+              id: true,
+              isDeleted: true
+            },
+            where: {
               oidcAuthentications: {
-                create: {
+                some: {
                   provider: OidcProvider.GOOGLE,
-                  subject: account.providerAccountId,
+                  subject: account.providerAccountId
                 }
               }
             },
-            select: { id: true },
           });
-          user.id = row.id;
-          console.log(`New user registered via Google SSO: ${row.id}`);
-          return true;
+          if (registration) {
+            if (registration.isDeleted) {
+              console.warn(`Deleted user attempted to sign in via Google SSO: ${registration.id}`);
+              return false;
+            }
+            user.id = registration.id;
+            console.log(`User signed in via Google SSO: ${registration.id}`);
+            return true;
+          } else {
+            // 登録されていない場合は新規登録
+            if (!user.name || !user.email || !user.image) {
+              console.error('Received incomplete user data from Google SSO');
+              return false;
+            }
+            let temporaryName = await getTemporaryUserName(user.email);
+            while (await prisma.user.findUnique({ select: { id: true }, where: { name: temporaryName } })) {
+              temporaryName = await getTemporaryUserName(temporaryName);
+            }
+            const row = await prisma.user.create({
+              data: {
+                email: user.email,
+                name: temporaryName,
+                displayName: user.name,
+                iconHash: null, // TODO: 画像の保存(Vercel Blob)とハッシュ化
+                oidcAuthentications: {
+                  create: {
+                    provider: OidcProvider.GOOGLE,
+                    subject: account.providerAccountId,
+                  }
+                }
+              },
+              select: { id: true },
+            });
+            user.id = row.id;
+            console.log(`New user registered via Google SSO: ${row.id}`);
+            return true;
+          }
+        }
+        default: {
+          break;
         }
       }
       // 許可しない場合はfalse
