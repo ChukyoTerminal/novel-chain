@@ -2,8 +2,16 @@ import { prisma } from '@/lib/prisma';
 import { getToken } from 'next-auth/jwt';
 import { NextRequest } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const url = request.nextUrl;
+  const limitParameter = url.searchParams.get('limit');
+  const offsetParameter = url.searchParams.get('offset');
+  const limit = Math.max(1, Math.min(Number(limitParameter) || 20, 100)); // 1〜100件
+  const offset = Math.max(0, Number(offsetParameter) || 0);
+
   const threads = await prisma.thread.findMany({
+    skip: offset,
+    take: limit,
     select: {
       id: true,
       title: true,

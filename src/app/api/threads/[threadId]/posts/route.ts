@@ -5,9 +5,16 @@ import { getToken } from 'next-auth/jwt';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ threadId: string }> }) {
   const { threadId } = await params;
+  const url = request.nextUrl;
+  const limitParameter = url.searchParams.get('limit');
+  const offsetParameter = url.searchParams.get('offset');
+  const limit = Math.max(1, Math.min(Number(limitParameter) || 20, 100)); // 1〜100件
+  const offset = Math.max(0, Number(offsetParameter) || 0);
 
   const posts = await prisma.post.findMany({
     where: { threadId },
+    skip: offset,
+    take: limit,
     select: {
       id: true,
       createdAt: true,
