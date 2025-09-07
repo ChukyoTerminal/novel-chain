@@ -33,16 +33,25 @@ export async function POST(
 
     //出力テキストの取得
     const result = await model.generateContent(fullPrompt);
-    const responseText = result.response.text();
+    let responseText = result.response.text();
+    console.log('[DEBUG] AI responseText:', responseText);
+    // 余計なバッククォートや```jsonなどを除去
+    responseText = responseText.replace(/^[`\s]*json\s*/i, '').replaceAll('```', '').trim();
 
     //JSONファイルのパース
-    const parsedTags = JSON.parse(responseText) as {tags : string[]};
+    let parsedTags;
+    try {
+      parsedTags = JSON.parse(responseText) as {tags : string[]};
+    } catch (e) {
+      console.error('[ERROR] JSON.parse failed', responseText, e);
+      return NextResponse.json({ error: 'AI response is not valid JSON.' }, { status: 500 });
+    }
     //ここif文つける．
         
     const tagNamesFromAI = parsedTags.tags;
 
     //tag tableから複数のレコードを取得する． 条件として，nameがt.tagsのうちのどれかに一致
-    const existingtags = await prisma.tag.findMany({
+    let existingtags = await prisma.tag.findMany({
       where: {
         name: { in : tagNamesFromAI }
       },
@@ -51,6 +60,26 @@ export async function POST(
         name: true,
       }
     });
+
+    // 存在しないタグは新規追加
+    const existingTagNames = new Set(existingtags.map(t => t.name));
+    const newTagNames = tagNamesFromAI.filter(name => !existingTagNames.has(name));
+    if (newTagNames.length > 0) {
+      await prisma.tag.createMany({
+        data: newTagNames.map(name => ({ name })),
+        skipDuplicates: true,
+      });
+      // 追加後、再度取得
+      existingtags = await prisma.tag.findMany({
+        where: {
+          name: { in : tagNamesFromAI }
+        },
+        select: {
+          id:true,
+          name: true,
+        }
+      });
+    }
 
     await prisma.$transaction(async (tx)=>{
       //既存のレコードを削除
@@ -66,9 +95,11 @@ export async function POST(
         tagId: tag.id,
       }))
       //更新
-      await tx.threadTag.createMany({
-        data: newThreadTagsDatas, 
-      });
+      if (newThreadTagsDatas.length > 0) {
+        await tx.threadTag.createMany({
+          data: newThreadTagsDatas, 
+        });
+      }
     });
          
     return NextResponse.json({ message: 'Document generated and saved successfully.' }, { status: 200 });    
