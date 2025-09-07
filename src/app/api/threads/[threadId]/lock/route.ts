@@ -25,6 +25,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 }
 
+export async function GET(request: NextRequest, { params }: { params: Promise<{ threadId: string }> }) {
+  const { threadId } = await params;
+  const lock = await prisma.threadLock.findUnique({
+    where: { threadId },
+    select: { id: true, threadId: true, lockedBy: true }
+  });
+  if (!lock) {
+    return new Response(JSON.stringify({ locked: false }), { status: 200 });
+  }
+  return new Response(JSON.stringify({ locked: true, ...lock }), { status: 200 });
+}
+
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ threadId: string }> }) {
   const { threadId } = await params;
   const token = await getToken({ req: request });

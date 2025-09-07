@@ -1,16 +1,16 @@
 //ユーザーが書いているtextを受け取り，それをもとに対して続きを生成するapi
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 
-const INSTRUCTION_PROMPT_A =
-  'あなたは小説家です。以下の小説を読んで、小説の続き400文字ほどを書いてください。' +
-  '以下の点に注意して執筆してください。' +
-  '登場人物の行動がその登場人物の性格や目的に当てはまるのかを考慮する。' +
-  '物語のストーリーが突然飛躍しないようにする。' +
-  '人間が読みやすいように適切に改行 "\\n" を入れる。' +
-  '出力形式は以下の通りです：' +
-  '{"story": "ここに400文字ほど小説を記述"}';
+const INSTRUCTION_PROMPT_A = String.raw`
+あなたは小説家です。以下の小説を読んで、小説の続きの一文を書いてください。
+以下の点に注意して執筆してください。
+登場人物の行動がその登場人物の性格や目的に当てはまるのかを考慮する。
+物語のストーリーが突然飛躍しないようにする。
+人間が読みやすいように適切に改行 "\n" を入れる。
+出力形式は以下の通りです：
+{"story": "ここに小説の続きを記述"}
+`;
 
 const API_KEY = process.env.GOOGLE_API_KEY;
 if (!API_KEY) {
@@ -28,11 +28,16 @@ export async function POST(
 
     //実際ここの部分未完成である．/api/threads/[thread_id]/postsを使う予定
     // 小説本文を取得
-    const msRes = await fetch(
+    const msResponse = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${thread_ID}`
     );
-    const msData = await;
-    const PROMPT_B = msData.summary;
+
+    if (!msResponse.ok) {
+      return new Response('Failed to fetch posts', { status: 500 });
+    }
+
+    const msData = await msResponse.json();
+    const PROMPT_B = msData.mergedContent;
 
     // AIに送信するプロンプト
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -51,8 +56,8 @@ export async function POST(
       },
       { status: 200 }
     );
-  } catch (error) {
-    console.error('API execution error:', error);
+  } catch (e) {
+    console.error('API execution error:', e);
     return NextResponse.json(
       { error: 'An error occurred while processing the request.' },
       { status: 500 }

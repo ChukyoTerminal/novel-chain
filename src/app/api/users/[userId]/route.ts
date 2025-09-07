@@ -1,14 +1,23 @@
 import { prisma } from '@/lib/prisma';
-
+import jwt from 'next-auth/jwt';
+import { NextRequest } from 'next/server';
 
 export async function GET(request: Request, { params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params;
+
+  // JWTからリクエストユーザーIDを取得
+  let requestUserId: string | null = null;
+  try {
+    const nextRequest = request instanceof NextRequest ? request : new NextRequest(request);
+    const token = await jwt.getToken({ req: nextRequest });
+    requestUserId = token?.sub ?? null;
+  } catch {}
 
   // 必要な情報をまとめて取得
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
-      email: true, // TODO: 本人のみ閲覧可能にする
+      email: true,
       name: true,
       displayName: true,
       iconHash: true,
@@ -75,6 +84,24 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
   // follower_count
   const followerCount = user.followers.length;
 
+  // 自分がフォローしているか
+  let is_following = false;
+  // 自分がフォローされているか
+  let is_followed = false;
+  if (requestUserId && requestUserId !== userId) {
+    // 自分がこのユーザーをフォローしているか
+    const follow = await prisma.userFollow.findUnique({
+      where: { followerId_followeeId: { followerId: requestUserId, followeeId: userId } }
+    });
+    is_following = !!follow;
+
+    // このユーザーが自分をフォローしているか
+    const followed = await prisma.userFollow.findUnique({
+      where: { followerId_followeeId: { followerId: userId, followeeId: requestUserId } }
+    });
+    is_followed = !!followed;
+  }
+
   // threadsの整形
   const threads = user.threads.map(thread => {
     const threadRating = thread.posts.reduce((sum, post) => sum + post.ratings.reduce((s, r) => s + r.score, 0), 0);
@@ -115,6 +142,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
     rating: userRating,
     display_name: user.displayName ?? '',
     follower_count: followerCount,
+    is_following,
+    is_followed,
     created_at: user.createdAt,
     threads,
     posts
