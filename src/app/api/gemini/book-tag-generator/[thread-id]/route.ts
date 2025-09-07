@@ -1,3 +1,4 @@
+//threadに対してtag付けを行うAI
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma'; 
@@ -16,19 +17,20 @@ if (!API_KEY) {
 }
 const genAI = new GoogleGenerativeAI(API_KEY); // generative AI クライアントのインスタンス
 
-export async function PUT(
+export async function POST(
   request: NextRequest,
-  { params }: { params: {  thread_ID : string } }// thread_IDの取得
+  { params }: { params: Promise <{  thread_ID : string }> }// thread_IDの取得
 ){
     try{
-        const thread_ID = params;
+        const requestbody = await params;
+        const thread_ID = requestbody.thread_ID;
 
-        //fetchのURLあっているかどうか？
-
-        //小説の本文をPROMPT_Bに入れる．
-        const mj = await fetch('/api/gemini/to-make-JSON/${thread_ID}',/*未完*/);
-        // mjにはJSON形式なる予定
-        const PROMPT_B = ;
+        
+        const msRes = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${thread_ID}`
+        );
+        const msData = await;
+        const PROMPT_B = msData.summary;
 
         //文書Aと文書Bを組み合わせてAIに送信
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -59,13 +61,13 @@ export async function PUT(
           //既存のレコードを削除
           await tx.threadTag.deleteMany({
             where: {
-              threadId: thread_ID.thread_ID,
+              threadId: thread_ID,
             },
           });
 
           //新しい関連データを作成
           const newThreadTagsDatas = existingtags.map(tag =>({
-            threadId: thread_ID.thread_ID,
+            threadId: thread_ID,
             tagId: tag.id,
           }))
           //更新

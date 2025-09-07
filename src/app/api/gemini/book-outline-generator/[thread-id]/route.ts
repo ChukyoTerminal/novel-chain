@@ -1,12 +1,9 @@
-//databaseとの連携をまだ行っていない
+//ユーザーが小説を書くに当たって，AIが続きを書く際の指針を制作してくれるapi
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma'; 
 
-
-
-//複数の投稿をまとめて一つのＪＳＯＮファイルで送ったほうがいい気がする．
-//ここで問題発生，thread_IDから投稿をどのようにサーチをサーチするのか？
 
 
 const INSTRUCTION_PROMPT_A = 'あなたは小説家です.物語の続きを執筆するために,作品を読み,物語の方向性や展開の可能性を示すあらすじを300文字以内で作成してください.'
@@ -23,17 +20,17 @@ const genAI = new GoogleGenerativeAI(API_KEY); // generative AI クライアン�
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: {  thread_ID : string } }// thread_IDの取得
+  { params }: { params: Promise <{  thread_ID : string }> }// thread_IDの取得
 ){
     try{
-        const thread_ID = params;
+        const requestbody = await params;
+        const thread_ID = requestbody.thread_ID;
 
-        //fetchのURLあっているかどうか？
-        //databaseでSQLで行うらしい
-        //小説の本文をPROMPT_Bに入れる．
-        const mj = await fetch('/api/gemini/to-make-JSON/${thread_ID}',/*未完*/);
-        // mjにはJSON形式なる予定
-        const PROMPT_B = await ;
+        const msRes = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${thread_ID}`
+        );
+        const msData = await;
+        const PROMPT_B = msData.summary;;
 
         //文書Aと文書Bを組み合わせてAIに送信
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });

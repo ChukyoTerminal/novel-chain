@@ -1,12 +1,10 @@
-//databaseとの連携をまだ行っていない
+//本の表紙に乗せる小説の紹介文を生成するapi
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma'; 
 
 
-
-//複数の投稿をまとめて一つのＪＳＯＮファイルで送ったほうがいい気がする．
-//ここで問題発生，thread_IDから投稿をどのようにサーチをサーチするのか？
 
 
 const INSTRUCTION_PROMPT_A = 'あなたは出版社の編集者です.担当している作家の作品を読み、読者の興味を引く魅力的なあらすじを300文字以内で作成してください.'
@@ -24,18 +22,18 @@ const genAI = new GoogleGenerativeAI(API_KEY); // generative AI クライアン�
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: {  thread_ID : string } }// thread_IDの取得
+  { params }: { params: Promise <{  thread_ID : string }> }// thread_IDの取得
 ){
     try{
-        const thread_ID = params;
+        const requestbody = await params;
+        const thread_ID = requestbody.thread_ID;
 
-        //fetchのURLあっているかどうか？
-        //小説の本文をPROMPT_Bに入れる．
-        const mj = await fetch('/api/gemini/to-make-JSON/${thread_ID}',/*未完*/);
-        // mjにはJSON形式なる予定
-
-        
-        const PROMPT_B = mj.;
+        //小説本文の習得
+        const msRes = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${thread_ID}`
+            );
+        const msData = await;
+        const PROMPT_B = msData.summary;
 
         //文書Aと文書Bを組み合わせてAIに送信
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -51,7 +49,7 @@ export async function PUT(
 
         const updatedPost = await prisma.thread.update({
         where: {
-            id: thread_ID.thread_ID //なんかわからんが，ここはobjectを渡す．
+            id: thread_ID
         },        
         data: {
             summary: summary.summary.toString()//ここは文字列を渡す．
