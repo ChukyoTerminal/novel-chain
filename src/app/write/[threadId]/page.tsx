@@ -37,10 +37,6 @@ export default function WriteThreadPage() {
         body: JSON.stringify({ content }),
       });
       if (response.ok) {
-        // 投稿成功時にロック解除
-        try {
-          await fetch(`/api/threads/${threadId}/lock`, { method: 'DELETE' });
-        } catch {}
         setModal({ open: true, message: '投稿しました！', success: true });
         setContent('');
         setTimeout(() => { setModal({ open: false, message: '', success: false }); router.push('/'); }, 1200);

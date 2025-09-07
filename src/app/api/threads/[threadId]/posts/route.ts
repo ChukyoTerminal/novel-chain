@@ -79,6 +79,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         updatedAt: true
       }
     });
+    await prisma.threadLock.deleteMany({ where: { threadId } });
     return new Response(JSON.stringify({ id: post.id, created_at: post.createdAt, updated_at: post.updatedAt }), { status: 201 });
   } catch (e) {
     console.error(e);
