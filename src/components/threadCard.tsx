@@ -1,3 +1,13 @@
+// カラー定義をJSオブジェクトで管理
+const colorMap = {
+  red:   { front: '#ff9e91', aspect: '#c42127', back: '#bd756c' },
+  blue:  { front: '#91caff', aspect: '#2176c4', back: '#6c9fbd' },
+  yellow:{ front: '#ffeb91', aspect: '#c4a321', back: '#bdb76c' },
+  green: { front: '#91ffb3', aspect: '#21c468', back: '#6cbda1' },
+  purple:{ front: '#d391ff', aspect: '#7c21c4', back: '#9f6cbd' },
+  gray:  { front: '#b0b0b0', aspect: '#4f4f4f', back: '#7a7a7a' },
+  paper:'#e6e0c3'
+};
 /* eslint-disable max-len */
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,21 +18,12 @@ import { Badge } from './ui/badge';
 import { Thread } from '@/types';
 
 const ThreadCardColorProperties = {
-  'blue': {
-    front_cover: 'bg-blue-400',
-    back_cover: 'bg-blue-500',
-    aspect_cover: 'bg-blue-600'
-  },
-  'amber': {
-    front_cover: 'bg-amber-300',
-    back_cover: 'bg-amber-400',
-    aspect_cover: 'bg-amber-500'
-  },
-  'red': {
-    front_cover: 'bg-red-400',
-    back_cover: 'bg-red-500',
-    aspect_cover: 'bg-red-600'
-  },
+  red: 'red',
+  blue: 'blue',
+  green: 'green',
+  yellow: 'yellow',
+  purple: 'purple',
+  gray: 'gray'
 }
 
 interface ThreadCardProperties {
@@ -36,7 +37,11 @@ export function ThreadCard({ thread, color }: ThreadCardProperties) {
     <div className="flex w-fit h-fit">
       <Card key={thread.id} className="relative w-55 h-70 p-0 overflow-hidden z-10 rounded-r-xl rounded-l-none shadow-md shadow-gray-400">
         <Button variant="ghost" size="lg" className="w-full h-full p-0">
-          <Link href={`/read/${thread.id}`} className={`w-full h-full flex flex-col p-2 ${ThreadCardColorProperties[color].front_cover}`}>
+          <Link
+            href={`/read/${thread.id}`}
+            style={{ backgroundColor: colorMap[color].front }}
+            className="w-full h-full flex flex-col p-2"
+          >
             <CardHeader className="w-full pb-2 px-0">
               <CardTitle className="text-left flex content-between px-1">
                 <p className="text-xl flex overflow-hidden">{thread.title}</p>
@@ -57,9 +62,15 @@ export function ThreadCard({ thread, color }: ThreadCardProperties) {
           </Link>
         </Button>
       </Card>
-      <div className={`relative z-0 h-5 w-55 top-68 right-57 ${ThreadCardColorProperties[color].back_cover} rounded-r-xl shadow-xl shadow-gray-800`} />
-      <div className={`relative ${ThreadCardColorProperties[color].aspect_cover} h-71 w-5 top-1 right-113 rounded-sm -skew-y-[25deg] z-20 shadow-md`} />
-      <div className={'relative bg-[#e6e0c3] h-2 w-54 z-20 top-70 right-117 -skew-x-[30deg] rounded-l-xl'} />
+      <div
+        className="relative z-0 h-5 w-55 top-68 right-57 rounded-r-xl shadow-xl shadow-gray-800"
+        style={{ backgroundColor: colorMap[color].back }}
+      />
+      <div
+        className="relative h-71 w-5 top-1 right-113 rounded-sm -skew-y-[25deg] z-20 shadow-md"
+        style={{ backgroundColor: colorMap[color].aspect }}
+      />
+      <div className="relative h-2 w-54 z-20 top-70 right-117 -skew-x-[30deg] rounded-l-xl" style={{ backgroundColor: colorMap['paper'] }} />
     </div>
   );
 }

@@ -92,7 +92,7 @@ export default function Home() {
               <h2 className="text-2xl font-bold mb-4">新着のスレッド</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {newThreads.map((thread) => (
-                  <ThreadCard key={`new-${thread.id}`} thread={thread} color="amber" />
+                  <ThreadCard key={`new-${thread.id}`} thread={thread} color="gray" />
                 ))}
               </div>
             </section>
