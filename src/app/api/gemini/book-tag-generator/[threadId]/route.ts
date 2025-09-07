@@ -19,15 +19,15 @@ const genAI = new GoogleGenerativeAI(API_KEY); // generative AI クライアン�
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise <{  thread_ID : string }> }// thread_IDの取得
+  { params }: { params: Promise <{  threadId : string }> }// thread_IDの取得
 ){
   try{
     const requestbody = await params;
-    const thread_ID = requestbody.thread_ID;
+    const threadId = requestbody.threadId;
 
         
     const msResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${thread_ID}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${threadId}`
     );
     if (!msResponse.ok) {
       return new Response('Failed to fetch posts', { status: 500 });
@@ -64,13 +64,13 @@ export async function POST(
       //既存のレコードを削除
       await tx.threadTag.deleteMany({
         where: {
-          threadId: thread_ID,
+          threadId: threadId,
         },
       });
 
       //新しい関連データを作成
       const newThreadTagsDatas = existingtags.map(tag =>({
-        threadId: thread_ID,
+        threadId: threadId,
         tagId: tag.id,
       }))
       //更新

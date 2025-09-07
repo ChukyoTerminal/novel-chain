@@ -19,15 +19,15 @@ const genAI = new GoogleGenerativeAI(API_KEY); // generative AI クライアン�
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise <{  thread_ID : string }> }// thread_IDの取得
+  { params }: { params: Promise <{  threadId : string }> }// thread_IDの取得
 ){
   try{
     const requestbody = await params;
-    const thread_ID = requestbody.thread_ID;
+    const threadId = requestbody.threadId;
 
     //小説本文の習得
     const msResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${thread_ID}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${threadId}`
     );
 
     if (!msResponse.ok) {
@@ -50,8 +50,8 @@ export async function PUT(
 
     await prisma.thread.update({
       where: {
-        id: thread_ID
-      },        
+        id: threadId
+      },
       data: {
         summary: summary.summary.toString()//ここは文字列を渡す．
       },

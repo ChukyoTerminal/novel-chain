@@ -20,16 +20,16 @@ const genAI = new GoogleGenerativeAI(API_KEY);
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { thread_ID: string } }
+  { params }: { params: { threadId: string } }
 ) {
   try {
     const { userText } = await request.json();
-    const { thread_ID } = params;
+    const { threadId } = params;
 
     //実際ここの部分未完成である．/api/threads/[thread_id]/postsを使う予定
     // 小説本文を取得
     const msResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${thread_ID}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${threadId}`
     );
 
     if (!msResponse.ok) {

@@ -26,6 +26,23 @@ type ClientType = {
   clientSecret: string;
 };
 
+/**
+ * NextAuthのセッションユーザー型拡張
+ */
+declare module 'next-auth' {
+  interface User {
+    id: string;
+  }
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+}
+
 
 /**
  * NextAuthのオプション。
@@ -151,7 +168,18 @@ const authOptions: NextAuthOptions = {
         token.sub = user.id;
       }
       return token;
-    }
+    },
+    async session({ session, token }) {
+      if (token && token.sub) {
+        if (session.user) {
+          session.user.id = token.sub;
+        }
+        else{
+          session.user = { id: token.sub };
+        }
+      }
+      return session;
+    },
   },
 };
 

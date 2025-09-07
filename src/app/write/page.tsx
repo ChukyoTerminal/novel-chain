@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 'use client'
 
 import { Thread } from '@/types';
@@ -13,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 
 export default function WritePage() {
+  const [loadingCandidates, setLoadingCandidates] = useState(true);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -98,6 +100,7 @@ export default function WritePage() {
     };
 
     const filterThreads = async () => {
+      setLoadingCandidates(true);
       // ユーザー情報取得（NextAuth）
       const sessionResponse = await fetch('/api/auth/session');
       const session = sessionResponse.ok ? await sessionResponse.json() : null;
@@ -112,6 +115,7 @@ export default function WritePage() {
         }
       }
       setFilteredThreads(filtered);
+      setLoadingCandidates(false);
     };
     if (threads.length > 0) filterThreads();
   }, [threads]);
@@ -140,6 +144,7 @@ export default function WritePage() {
         alert('新規スレッドを作成しました！');
         setTitle('');
         setContent('');
+        router.push('/');
       } else {
         alert('スレッド作成に失敗しました');
       }
@@ -190,28 +195,40 @@ export default function WritePage() {
       {/* モーダル風スレッド選択 */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20">
-          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl">
             <h2 className="text-xl font-bold mb-4">続きの投稿をするスレッドを選択</h2>
             <p className="text-muted-foreground mb-4">ランダムで3件表示しています</p>
-            <div className="flex flex-col gap-4 mb-4">
-              {filteredThreads.length > 0 ? (
+            <div className="flex flex-row gap-4 mb-4 min-h-[120px] items-center justify-center">
+              {loadingCandidates ? (
+                <div className="flex w-full justify-center items-center">
+                  <div className="flex gap-2">
+                    <span className="block w-4 h-4 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
+                    <span className="block w-4 h-4 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                    <span className="block w-4 h-4 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                  </div>
+                </div>
+              // eslint-disable-next-line sonarjs/no-nested-conditional
+              ) : (filteredThreads.length > 0 ? (
                 [...filteredThreads]
                   // eslint-disable-next-line sonarjs/pseudo-random
                   .sort(() => Math.random() - 0.5)
                   .slice(0, 3)
                   .map(thread => (
-                    <Button
-                      key={thread.id}
-                      className="w-full text-left"
-                      variant="outline"
-                      onClick={async () => {setShowModal(false); router.push(`/write/${thread.id}`); }}
-                    >
-                      {thread.title}
-                    </Button>
+                    <div key={thread.id} className="flex flex-col items-stretch w-72 bg-gray-50 border rounded-lg shadow p-4">
+                      <div className="font-bold text-lg mb-2">{thread.title}</div>
+                      <div className="text-sm text-gray-600 mb-4 line-clamp-3">{thread.summary}</div>
+                      <Button
+                        className="w-full mt-auto"
+                        variant="outline"
+                        onClick={async () => { setShowModal(false); router.push(`/write/${thread.id}`); }}
+                      >
+                        このスレッドで続ける
+                      </Button>
+                    </div>
                   ))
               ) : (
                 <p>表示できるスレッドがありません</p>
-              )}
+              ))}
             </div>
             <div className="text-center">
               <Button onClick={() => { setShowModal(false); setShowNewForm(true); }} size="super" className="px-8 py-3">
