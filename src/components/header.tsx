@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+import Logo from './logo';
 import { Button } from './ui/button';
 import { LuChevronLeft } from 'react-icons/lu';
 
@@ -26,7 +27,13 @@ export function Header({ label, onBackClick, showBackButton = false, isFixed = f
         </Button>
       )}
       <div className="flex-1 text-center">
-        <h1 className="text-2xl font-bold">{label}</h1>
+        {label === 'logo' ? (
+          <div className='flex justify-center'>
+            <Logo height={35} />
+          </div>
+        ) : (
+          <h1 className="text-2xl font-bold">{label}</h1>
+        )}
       </div>
       {showFunctionButton && (
         <Button variant="outline" size="sm" className="mr-4" onClick={onFunctionButtonClick}>

@@ -17,16 +17,23 @@ export async function PUT(
   try{
     const { threadId } = await params;
 
-    //小説本文の習得
-    const msResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${threadId}`
-    );
-
+    // fetch用の絶対URLを生成
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const fetchUrl = `${baseUrl}/api/gemini/to-make-JSON/${threadId}`;
+    console.log('[DEBUG] fetchUrl:', fetchUrl);
+    const msResponse = await fetch(fetchUrl);
+    console.log('[DEBUG] msResponse status:', msResponse.status);
     if (!msResponse.ok) {
+      console.error('[ERROR] Failed to fetch posts', await msResponse.text());
       return new Response('Failed to fetch posts', { status: 500 });
     }
     const msData = await msResponse.json();
-    const PROMPT_B = msData.summary;
+    console.log('[DEBUG] msData:', msData);
+    const PROMPT_B = msData.mergedContent ?? '';
+    if (!PROMPT_B || PROMPT_B.trim() === '') {
+      console.error('[ERROR] mergedContent is empty, skipping AI request');
+      return NextResponse.json({ error: 'No content to summarize.' }, { status: 400 });
+    }
 
     //文書Aと文書Bを組み合わせてAIに送信
     const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -34,11 +41,19 @@ export async function PUT(
 
     //出力テキストの取得
     const result = await model.generateContent(fullPrompt);
-    const responseText = result.response.text();
+    let responseText = result.response.text();
+    console.log('[DEBUG] AI responseText:', responseText);
+    // 余計なバッククォートや```jsonなどを除去
+    responseText = responseText.replace(/^[`\s]*json\s*/i, '').replaceAll('```', '').trim();
 
     //JSONファイルのパース
-    const summary = JSON.parse(responseText);
-    //ここif文つける．
+    let summary;
+    try {
+      summary = JSON.parse(responseText);
+    } catch (e) {
+      console.error('[ERROR] JSON.parse failed', responseText, e);
+      return NextResponse.json({ error: 'AI response is not valid JSON.' }, { status: 500 });
+    }
 
     await prisma.thread.update({
       where: {
