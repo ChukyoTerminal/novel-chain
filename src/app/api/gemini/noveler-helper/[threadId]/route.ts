@@ -20,11 +20,11 @@ const genAI = new GoogleGenerativeAI(API_KEY);
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { threadId: string } }
+  { params }: { params: Promise<{ threadId: string }> }
 ) {
   try {
     const { userText } = await request.json();
-    const { threadId } = params;
+    const { threadId } = await params;
 
     //実際ここの部分未完成である．/api/threads/[thread_id]/postsを使う予定
     // 小説本文を取得
