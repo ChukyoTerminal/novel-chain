@@ -10,11 +10,6 @@ export const redis =
   await createClient({ url: process.env.REDIS_URL })
     .on('error', async (e) => {
       console.error('Redis Client Error:', e);
-      if (!redis.isOpen) {
-        console.info('Reconnecting to Redis...');
-        await redis.connect();
-        console.info('Reconnected to Redis');
-      }
     })
     .connect();
 
