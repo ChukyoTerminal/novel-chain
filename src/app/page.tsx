@@ -31,7 +31,7 @@ export default function Home() {
         if (response.ok) {
           const data = await response.json();
           console.log('[DEBUG] fetched threads:', data);
-          setThreads(data);
+          setThreads(data.threads ?? []);
           console.log(data);
         }
       } catch (e) {
