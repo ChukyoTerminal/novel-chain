@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+ 
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

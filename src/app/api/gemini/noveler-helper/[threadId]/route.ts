@@ -1,6 +1,7 @@
 //ユーザーが書いているtextを受け取り，それをもとに対して続きを生成するapi
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { gemini } from '@/lib/gemini';
 
 const INSTRUCTION_PROMPT_A = String.raw`
 あなたは小説家です。以下の小説を読んで、小説の続きの一文を書いてください。
@@ -12,12 +13,6 @@ const INSTRUCTION_PROMPT_A = String.raw`
 {"story": "ここに小説の続きを記述"}
 `;
 
-const API_KEY = process.env.GOOGLE_API_KEY;
-if (!API_KEY) {
-  throw new Error('GOOGLE_API_KEY is not set.');
-}
-const genAI = new GoogleGenerativeAI(API_KEY);
-
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ threadId: string }> }
@@ -26,7 +21,7 @@ export async function POST(
     const { userText } = await request.json();
     const { threadId } = await params;
 
-    //実際ここの部分未完成である．/api/threads/[thread_id]/postsを使う予定
+    //実際ここの部分未完成である．/api/threads/[threadId]/postsを使う予定
     // 小説本文を取得
     const msResponse = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/gemini/to-make-JSON/${threadId}`
@@ -40,7 +35,7 @@ export async function POST(
     const PROMPT_B = msData.mergedContent;
 
     // AIに送信するプロンプト
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const fullPrompt = `${INSTRUCTION_PROMPT_A}\n\n小説本文:\n${PROMPT_B}\n${userText}`;
 
     const result = await model.generateContent(fullPrompt);

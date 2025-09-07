@@ -1,7 +1,8 @@
 //更新されていないthreadに対して新しいPostを追加するapi
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { gemini } from '@/lib/gemini';
 
 //改善必須  AIにキャラクタをつけての投稿できるように
 //Postの作成は直接データベースを書く感じ
@@ -15,20 +16,12 @@ const INSTRUCTION_PROMPT_A = 'あなたは小説家です.以下の小説を読�
 +'出力形式は以下の通りです：'
 +'{"story": "ここに500文字以下の小説を記述" ';
 
-// APIkey セット
-const API_KEY = process.env.GOOGLE_API_KEY;
-if (!API_KEY) {
-  throw new Error('GOOGLE_API_KEY is not set.');
-}
-const genAI = new GoogleGenerativeAI(API_KEY); // generative AI クライアントのインスタンス
-
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise <{  threadId : string }> }// thread_IDの取得
+  { params }: { params: Promise<{ threadId : string }> }// threadIdの取得
 ){
   try{
-    const requestbody = await params;
-    const threadId = requestbody.threadId;
+    const { threadId } = await params;
 
     //fetchのURLあっているかどうか？
     //小説の本文をPROMPT_Bに入れる．
@@ -50,7 +43,7 @@ export async function POST(
     const PROMPT_B = msData.mergedContent;
 
     //文書Aと文書Bを組み合わせてAIに送信
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const fullPrompt = `${INSTRUCTION_PROMPT_A}\n\n小説本文:\n${PROMPT_B}`;
 
     //出力テキストの取得

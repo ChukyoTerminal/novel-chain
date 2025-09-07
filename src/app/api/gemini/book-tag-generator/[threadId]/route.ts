@@ -1,6 +1,6 @@
 //threadに対してtag付けを行うAI
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
+import { gemini } from '@/lib/gemini';
 import { prisma } from '@/lib/prisma'; 
 
 //tagの信頼度順につける機能が欲しい．
@@ -10,20 +10,12 @@ const INSTRUCTION_PROMPT_A =`あなたは出版社の編集者です。あなた
 使用できるタグは次の6種類のみです：ミステリー, ファンタジー, SF, 恋愛, ホラー, ライトノベル。タグは1〜3個選んでください。
 出力は必ずJSON形式とし、余計な文章を含めないでください。出力例：{"tags": ["SF", "恋愛"]}`;
 
-// APIkey セット
-const API_KEY = process.env.GOOGLE_API_KEY;
-if (!API_KEY) {
-  throw new Error('GOOGLE_API_KEY is not set.');
-}
-const genAI = new GoogleGenerativeAI(API_KEY); // generative AI クライアントのインスタンス
-
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise <{  threadId : string }> }// thread_IDの取得
+  { params }: { params: Promise<{ threadId : string }> }// threadIdの取得
 ){
   try{
-    const requestbody = await params;
-    const threadId = requestbody.threadId;
+    const { threadId } = await params;
 
         
     const msResponse = await fetch(
@@ -36,7 +28,7 @@ export async function POST(
     const PROMPT_B = msData.summary;
 
     //文書Aと文書Bを組み合わせてAIに送信
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const fullPrompt = `${INSTRUCTION_PROMPT_A}\n\n小説本文:\n${PROMPT_B}`;
 
     //出力テキストの取得
