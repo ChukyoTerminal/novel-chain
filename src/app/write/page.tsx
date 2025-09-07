@@ -37,58 +37,79 @@ export default function WritePage() {
   }, []);
 
   useEffect(() => {
+    // ログ出力関数
+    const log = (message: string) => { console.log(message); };
+
+    // スレッド候補判定サブルーチン
+    const isThreadCandidate = async (thread: Thread, userId: string) => {
+      let logMessage = `[候補判定] threadId=${thread.id}`;
+      // 最新投稿取得
+      let latestPostUser = '';
+      try {
+        const postResponse = await fetch(`/api/threads/${thread.id}/posts`);
+        if (postResponse.ok) {
+          const postData = await postResponse.json();
+          const posts = postData?.posts || [];
+          const lastPost = posts.at(-1);
+          latestPostUser = lastPost?.author?.id;
+          logMessage += `, 最新投稿ユーザー=${latestPostUser}`;
+          logMessage += `, 現在のユーザーID=${userId}`;
+        } else {
+          logMessage += ', 投稿取得失敗';
+          log(logMessage);
+          return false;
+        }
+      } catch {
+        logMessage += ', 投稿取得例外';
+        log(logMessage);
+        return false;
+      }
+      if (latestPostUser === userId) {
+        logMessage += ' →自分の投稿なので除外';
+        log(logMessage);
+        return false;
+      }
+      // ロック判定
+      try {
+        const lockResponse = await fetch(`/api/threads/${thread.id}/lock`, { method: 'GET' });
+        logMessage += `, ロック判定status=${lockResponse.status}`;
+        if (lockResponse.status === 200) {
+          const lockData = await lockResponse.json();
+          if (lockData.locked) {
+            logMessage += ' →ロックされているので除外';
+            log(logMessage);
+            return false;
+          } else {
+            logMessage += ' →ロックされていない';
+          }
+        } else {
+          logMessage += ' →ロック情報取得失敗で除外';
+          log(logMessage);
+          return false;
+        }
+      } catch {
+        logMessage += ' →ロック判定例外で除外';
+        log(logMessage);
+        return false;
+      }
+      logMessage += ' →候補に追加';
+      log(logMessage);
+      return true;
+    };
+
     const filterThreads = async () => {
       // ユーザー情報取得（NextAuth）
       const sessionResponse = await fetch('/api/auth/session');
       const session = sessionResponse.ok ? await sessionResponse.json() : null;
       const userId = session?.user?.id;
-      console.log(session)
-      console.log('[filterThreads] 現在のユーザーID:', userId);
+      log(session);
+      log('[filterThreads] 現在のユーザーID:' + userId);
       // 最新投稿が自分のもの or ロックされているものを除外
       const filtered: Thread[] = [];
       for (const thread of threads) {
-        // 最新投稿取得
-        let latestPostUser = '';
-        let logMessage = `[候補判定] threadId=${thread.id}`;
-        try {
-          const postResponse = await fetch(`/api/threads/${thread.id}/posts`);
-          if (postResponse.ok) {
-            const postData = await postResponse.json();
-            const posts = postData?.posts || [];
-            const lastPost = posts.at(-1);
-            latestPostUser = lastPost?.author?.id;
-            logMessage += `, 最新投稿ユーザー=${latestPostUser}`;
-            logMessage += `, 現在のユーザーID=${userId}`;
-          } else {
-            logMessage += ', 投稿取得失敗';
-          }
-        } catch {
-          logMessage += ', 投稿取得例外';
+        if (await isThreadCandidate(thread, userId)) {
+          filtered.push(thread);
         }
-        if (latestPostUser === userId) {
-          logMessage += ' →自分の投稿なので除外';
-          console.log(logMessage);
-          continue;
-        }
-        // ロック判定
-        try {
-          const lockResponse = await fetch(`/api/threads/${thread.id}/lock`, { method: 'POST' });
-          logMessage += `, ロック判定status=${lockResponse.status}`;
-          if (lockResponse.status !== 204) {
-            logMessage += ' →ロックされているので除外';
-            console.log(logMessage);
-            continue;
-          } else {
-            logMessage += ' →ロックされていない';
-          }
-        } catch {
-          logMessage += ' →ロック判定例外で除外';
-          console.log(logMessage);
-          continue;
-        }
-        logMessage += ' →候補に追加';
-        console.log(logMessage);
-        filtered.push(thread);
       }
       setFilteredThreads(filtered);
     };
