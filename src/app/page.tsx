@@ -1,11 +1,9 @@
 /* eslint-disable max-len */
 'use client'
 
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { HeroPage } from '@/components/heroPage';
 import { Thread } from '@/types';
 import { ThreadCard } from '@/components/threadCard';
 import { useSession } from 'next-auth/react';
@@ -17,6 +15,7 @@ export default function Home() {
   const threadColors = ['blue', 'red', 'green', 'yellow', 'purple', 'gray'] as const;
   // eslint-disable-next-line sonarjs/pseudo-random
   const getRandomColor = (): typeof threadColors[number] => threadColors[Math.floor(Math.random() * threadColors.length)];
+  // eslint-disable-next-line sonarjs/no-unused-vars, sonarjs/no-dead-store
   const { data: session, status } = useSession();
   const [threads, setThreads] = useState<Thread[]>([]);
 
@@ -60,9 +59,9 @@ export default function Home() {
       .slice(0, 4);
   };
 
-  if (status === 'loading') {
+  if (status === 'loading' || (threads.length === 0 && status === 'authenticated')) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-paper dark:bg-gray-700">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[var(--color-paper)] to-[#dfd0a7] dark:from-[#546072] dark:to-gray-700">
         <div className="flex flex-col items-center">
           <div className="flex space-x-2 animate-bounce">
             <div className="w-4 h-4 bg-text rounded-full" />
@@ -75,9 +74,8 @@ export default function Home() {
     );
   }
 
-  // ログインしている場合とそうでない場合を三項演算子で分岐
-  return session ? (
-    <div className="min-h-screen pb-16 overflow-x-hidden bg-paper dark:bg-gray-700 max-w-screen">
+  return(
+    <div className="min-h-screen pb-16 overflow-x-hidden bg-gradient-to-b from-[var(--color-paper)] to-[#dfd0a7] dark:from-[#546072] dark:to-gray-700 max-w-screen">
       <Header label="logo" showBackButton={false} />
       <main className="flex flex-col space-y-8 mb-4">
         {/* テーマ切り替えボタン */}
@@ -88,7 +86,7 @@ export default function Home() {
         {threads.length > 0 ? (
           <>
             <section className="px-40">
-              <h2 className="text-2xl font-bold mb-4">おすすめのスレッド</h2>
+              <h2 className="text-2xl font-bold mb-4">おすすめの小説</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {recommendedThreads.map((thread) => (
                   <ThreadCard key={`recommended-${thread.id}`} thread={thread} color={getRandomColor()} />
@@ -96,11 +94,11 @@ export default function Home() {
               </div>
             </section>
 
-            <BookShelfSeparator width="400" />
+            <BookShelfSeparator width="400"/>
 
-            {/* 新着のスレッド */}
+            {/* 最近更新された小説 */}
             <section className="px-40 mx-auto">
-              <h2 className="text-2xl font-bold mb-4">新着のスレッド</h2>
+              <h2 className="text-2xl font-bold mb-4">最近更新された小説</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {newThreads.map((thread) => (
                   <ThreadCard key={`new-${thread.id}`} thread={thread} color={getRandomColor()} />
@@ -131,15 +129,14 @@ export default function Home() {
             })}
           </>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>No Threads Available</CardTitle>
-              <CardDescription>Please check back later.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>There are currently no threads to display. Please check back later.</p>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center justify-center mt-20">
+            <h2 className="text-2xl font-bold mb-4">現在表示できる小説はありません</h2>
+            <div className="flex space-x-2 animate-bounce">
+              <div className="w-4 h-4 bg-text dark:bg-white rounded-full" />
+              <div className="w-4 h-4 bg-text dark:bg-white rounded-full" style={{ animationDelay: '0.2s' }} />
+              <div className="w-4 h-4 bg-text dark:bg-white rounded-full" style={{ animationDelay: '0.4s' }} />
+            </div>
+          </div>
         )}
         <div className="h-20" />
         {/* デバッグ用：全スレッドロック解除ボタン */}
@@ -198,8 +195,5 @@ export default function Home() {
       </main>
       <Footer />
     </div>
-  ) : (
-    // ログインしていない場合
-    <HeroPage />
   );
 }

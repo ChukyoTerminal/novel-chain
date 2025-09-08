@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { LuSend } from 'react-icons/lu';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { useSession } from 'next-auth/react';
 
 export default function WritePage() {
   const [loadingCandidates, setLoadingCandidates] = useState(true);
@@ -23,6 +24,8 @@ export default function WritePage() {
   const [showModal, setShowModal] = useState(true);
   const maxLength = 500;
   const router = useRouter();
+  const { data: session,status }=useSession();
+
   useEffect(() => {
     const fetchThreads = async () => {
       try {
@@ -102,15 +105,12 @@ export default function WritePage() {
     const filterThreads = async () => {
       setLoadingCandidates(true);
       // ユーザー情報取得（NextAuth）
-      const sessionResponse = await fetch('/api/auth/session');
-      const session = sessionResponse.ok ? await sessionResponse.json() : null;
       const userId = session?.user?.id;
-      log(session);
       log('[filterThreads] 現在のユーザーID:' + userId);
       // 最新投稿が自分のもの or ロックされているものを除外
       const filtered: Thread[] = [];
       for (const thread of threads) {
-        if (await isThreadCandidate(thread, userId)) {
+        if (await isThreadCandidate(thread, userId as string)) {
           filtered.push(thread);
         }
       }
@@ -118,7 +118,7 @@ export default function WritePage() {
       setLoadingCandidates(false);
     };
     if (threads.length > 0) filterThreads();
-  }, [threads]);
+  }, [threads, session]);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -199,7 +199,7 @@ export default function WritePage() {
             <h1 className="text-xl font-bold mb-4">続きを書く小説を選択</h1>
             <p className="text-muted-foreground mb-4">傾向からランダムに3件表示しています</p>
             <div className="flex flex-row gap-4 mb-4 min-h-[120px] items-center justify-center">
-              {loadingCandidates ? (
+              {loadingCandidates && status == 'loading' ? (
                 <div className="flex w-full justify-center items-center">
                   <div className="flex gap-2">
                     <span className="block w-4 h-4 bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
@@ -230,14 +230,16 @@ export default function WritePage() {
                     </div>
                   ))
               ) : (
-                <p>表示できる小説がありません</p>
+                <p>{session ? '表示できる小説がありません' : 'ログインしてください'}</p>
               ))}
             </div>
-            <div className="text-center">
-              <Button onClick={() => { setShowModal(false); setShowNewForm(true); }} size="super" className="px-8 py-3">
-                新しい物語を始める
-              </Button>
-            </div>
+            {session && (
+              <div className="text-center">
+                <Button onClick={() => { setShowModal(false); setShowNewForm(true); }} size="super" className="px-8 py-3">
+                  新しい物語を始める
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}

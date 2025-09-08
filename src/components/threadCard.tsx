@@ -3,7 +3,7 @@ const colorMap = {
   red:   { front: '#ff9e91', aspect: '#c42127', back: '#bd756c' },
   blue:  { front: '#91caff', aspect: '#2176c4', back: '#6c9fbd' },
   yellow:{ front: '#ffeb91', aspect: '#c4a321', back: '#bdb76c' },
-  green: { front: '#91ffb3', aspect: '#21c468', back: '#6cbda1' },
+  green: { front: '#91ffb3', aspect: '#21c468', back: '#5db370' },
   purple:{ front: '#d391ff', aspect: '#7c21c4', back: '#9f6cbd' },
   gray:  { front: '#b0b0b0', aspect: '#4f4f4f', back: '#7a7a7a' },
   paper:'#e6e0c3'
@@ -39,8 +39,8 @@ export function ThreadCard({ thread, color }: ThreadCardProperties) {
         <Button variant="ghost" size="lg" className="w-full h-full p-0">
           <Link
             href={`/read/${thread.id}`}
-            style={{ backgroundColor: colorMap[color].front }}
-            className="w-full h-full flex flex-col p-2"
+            style={{ '--bg-front': colorMap[color].front, '--bg-front-hover': colorMap[color].back } as React.CSSProperties}
+            className="w-full h-full flex flex-col p-2 bg-[var(--bg-front)] hover:bg-[var(--bg-front-hover)]"
           >
             <CardHeader className="w-full pb-2 px-0">
               <CardTitle className="text-left flex content-between px-1">

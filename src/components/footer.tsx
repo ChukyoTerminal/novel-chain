@@ -14,7 +14,7 @@ export function Footer() {
   };
 
   return (
-    <footer className='fixed bottom-0 left-0 right-0 bg-white border-t-4 border-white z-50 h-20' style={{
+    <footer className='fixed bottom-0 left-0 right-0 bg-[#686868] border-t-4 border-[#686868] z-50 h-20' style={{
       boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06)'
     }}>
       <div className='flex items-center justify-center h-full max-w-screen mx-auto'>
@@ -30,7 +30,7 @@ export function Footer() {
             </Button>
           </Link>
 
-          <div className='w-px h-16 bg-border self-center mx-1'></div>
+          <div className='w-px h-16 bg-neutral-600 self-center mx-0.5'></div>
 
           <Link href="/write" className='flex-1 flex items-center h-full'>
             <Button
@@ -44,7 +44,7 @@ export function Footer() {
           </Link>
         </div>
 
-        <div className='w-px h-12 bg-border self-center'></div>
+        <div className='w-px h-12 bg-neutral-600 self-center'></div>
 
         <div className='flex items-center justify-center px-4 h-full'>
           <Link href='/profile'>
