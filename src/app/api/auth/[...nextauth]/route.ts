@@ -53,11 +53,11 @@ const authOptions: NextAuthOptions = {
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'text', placeholder: 'you@example.com' },
-        password: { label: 'Password', type: 'password' }
+        password_hash: { label: 'Password SHA-256', type: 'text' }
       },
       async authorize(credentials) {
         // 受け取るパスワードはSHA-256でハッシュ化されたものを想定
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.email || !credentials?.password_hash) {
           return null;
         }
         const user = await prisma.user.findUnique({
@@ -71,7 +71,7 @@ const authOptions: NextAuthOptions = {
         } else if (!user.passwordHash) {
           console.warn(`User attempted to sign in with credentials but has no password set: ${user.id}`);
           return null;
-        } else if (await matchPassword(credentials.password, user.passwordHash)) {
+        } else if (await matchPassword(credentials.password_hash, user.passwordHash)) {
           if (user.isDeleted) {
             console.warn(`Deleted user attempted to sign in: ${user.id}`);
             return null;
