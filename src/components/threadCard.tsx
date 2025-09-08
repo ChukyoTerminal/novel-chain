@@ -44,7 +44,7 @@ export function ThreadCard({ thread, color }: ThreadCardProperties) {
           >
             <CardHeader className="w-full pb-2 px-0">
               <CardTitle className="text-left flex content-between px-1">
-                <p className="text-xl flex overflow-hidden">{thread.title}</p>
+                <p className="text-xl flex overflow-clip w-40">{thread.title}</p>
                 <div className="flex items-center gap-1 ml-auto text-sm text-black">
                   <LuHeart />
                   <span>{thread.rating}</span>

@@ -12,7 +12,7 @@ interface ChapterCardProperties {
 export function ChapterCard({ content, author, createdAt }: ChapterCardProperties) {
   return (
     <div>
-      <Card className="mb-4 z-20 rounded-none bg-amber-50 gap-2">
+      <Card className="mb-4 z-20 rounded-none bg-amber-50 gap-2 min-w-4xl">
         <CardHeader>
           <CardDescription className="flex items-center justify-between">
             <div className="text-md">

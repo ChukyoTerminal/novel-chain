@@ -9,22 +9,42 @@ import { Badge } from '@/components/ui/badge';
 import { LuUser, LuPencil as LuEdit, LuSettings, LuLogOut } from 'react-icons/lu';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut, signIn } from 'next-auth/react';
-import { testUser } from '@/lib/mockData';
 import { useEffect, useState } from 'react';
-import { User } from '@/types';
 import Image from 'next/image';
 
 export default function ProfilePage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  type User = {
+    id: string;
+    display_name: string;
+    email: string;
+    follower_count: number;
+    rating: number;
+    posts: { id: string }[];
+    comments: { id: string }[];
+    threads: { id: string; tags: string[] }[];
+  };
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    if (session?.user?.email) {
-      // セッションのメールアドレスに基づいてユーザー情報を取得
-      const user = testUser; // ここを実際のデータ取得ロジックに置き換え
-      setCurrentUser(user || null);
-    }
+    const fetchUser = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch(`/api/users/${session.user.id}`);
+          if (response.ok) {
+            const user = await response.json();
+            setCurrentUser(user);
+          } else {
+            setCurrentUser(null);
+          }
+        } catch {
+          setCurrentUser(null);
+        }
+      }
+    };
+    fetchUser();
   }, [session]);
 
   const handleBackClick = () => {
@@ -107,6 +127,23 @@ export default function ProfilePage() {
                 <Button variant="destructive" size="sm" onClick={handleLogout}>
                   <LuLogOut className="mr-2" size={16} />
                   ログアウト
+                </Button>
+                <Button variant="destructive" size="sm" onClick={async () => {
+                  if (!globalThis.confirm('本当にアカウントを削除しますか？この操作は元に戻せません。')) return;
+                  try {
+                    const response = await fetch(`/api/users/${currentUser.id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                      alert('アカウントを削除しました');
+                      await signOut({ redirect: false });
+                      router.push('/');
+                    } else {
+                      alert('削除に失敗しました');
+                    }
+                  } catch {
+                    alert('削除処理でエラーが発生しました');
+                  }
+                }}>
+                  アカウント削除
                 </Button>
               </div>
             </CardHeader>

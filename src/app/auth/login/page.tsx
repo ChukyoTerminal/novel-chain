@@ -8,6 +8,13 @@ import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/com
 import { LuBookOpen, LuArrowLeft } from 'react-icons/lu';
 import Link from 'next/link';
 
+const hashPassword = async (password: string) => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return [...new Uint8Array(hashBuffer)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,9 +22,10 @@ export default function LoginPage() {
 
   const handleEmailLogin = async () => {
     setError('');
+    const hashedPassword = await hashPassword(password); // パスワードをハッシュ
     const response = await signIn('credentials', {
       email,
-      password,
+      password: hashedPassword,
       redirect: false,
     });
     if (response?.error) {

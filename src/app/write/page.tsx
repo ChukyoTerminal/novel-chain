@@ -141,12 +141,12 @@ export default function WritePage() {
         body: JSON.stringify({ title, content }),
       });
       if (response.ok) {
-        alert('新規スレッドを作成しました！');
+        alert('新規小説を投稿しました！');
         setTitle('');
         setContent('');
         router.push('/');
       } else {
-        alert('スレッド作成に失敗しました');
+        alert('小説の投稿に失敗しました');
       }
     } catch {
       alert('通信エラーが発生しました');
@@ -195,16 +195,16 @@ export default function WritePage() {
       {/* モーダル風スレッド選択 */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20">
-          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl">
-            <h2 className="text-xl font-bold mb-4">続きの投稿をするスレッドを選択</h2>
-            <p className="text-muted-foreground mb-4">ランダムで3件表示しています</p>
+          <div className="bg-white rounded-lg shadow-lg p-8 w-fit">
+            <h1 className="text-xl font-bold mb-4">続きを書く小説を選択</h1>
+            <p className="text-muted-foreground mb-4">傾向からランダムに3件表示しています</p>
             <div className="flex flex-row gap-4 mb-4 min-h-[120px] items-center justify-center">
               {loadingCandidates ? (
                 <div className="flex w-full justify-center items-center">
                   <div className="flex gap-2">
-                    <span className="block w-4 h-4 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
-                    <span className="block w-4 h-4 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-                    <span className="block w-4 h-4 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                    <span className="block w-4 h-4 bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
+                    <span className="block w-4 h-4 bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                    <span className="block w-4 h-4 bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
                   </div>
                 </div>
               // eslint-disable-next-line sonarjs/no-nested-conditional
@@ -214,25 +214,28 @@ export default function WritePage() {
                   .sort(() => Math.random() - 0.5)
                   .slice(0, 3)
                   .map(thread => (
-                    <div key={thread.id} className="flex flex-col items-stretch w-72 bg-gray-50 border rounded-lg shadow p-4">
-                      <div className="font-bold text-lg mb-2">{thread.title}</div>
+                    <div key={thread.id} className="flex flex-col items-stretch max-w-64 min-w-64 min-h-[250px] max-h-[250px] bg-gray-50 border rounded-lg shadow p-4">
+                      <div className="font-bold text-lg mb-2 truncate" title={thread.title}>
+                        {thread.title.length > 24 ? thread.title.slice(0, 24) + '…' : thread.title}
+                      </div>
                       <div className="text-sm text-gray-600 mb-4 line-clamp-3">{thread.summary}</div>
                       <Button
                         className="w-full mt-auto"
                         variant="outline"
+                        size="lg"
                         onClick={async () => { setShowModal(false); router.push(`/write/${thread.id}`); }}
                       >
-                        このスレッドで続ける
+                        この小説の続きを書く
                       </Button>
                     </div>
                   ))
               ) : (
-                <p>表示できるスレッドがありません</p>
+                <p>表示できる小説がありません</p>
               ))}
             </div>
             <div className="text-center">
               <Button onClick={() => { setShowModal(false); setShowNewForm(true); }} size="super" className="px-8 py-3">
-                新しく書く
+                新しい物語を始める
               </Button>
             </div>
           </div>

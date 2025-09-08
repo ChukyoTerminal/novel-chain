@@ -29,7 +29,7 @@ export function Header({ label, onBackClick, showBackButton = false, isFixed = f
       <div className="flex-1 text-center">
         {label === 'logo' ? (
           <div className='flex justify-center'>
-            <Logo height={35} />
+            <Logo height={40} />
           </div>
         ) : (
           <h1 className="text-2xl font-bold">{label}</h1>

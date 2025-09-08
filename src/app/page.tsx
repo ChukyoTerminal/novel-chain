@@ -60,16 +60,16 @@ export default function Home() {
       .slice(0, 4);
   };
 
-  if (status === 'loading' || (status === 'authenticated' && threads.length === 0)) {
+  if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-amber-50 dark:bg-gray-700">
+      <div className="min-h-screen flex items-center justify-center bg-paper dark:bg-gray-700">
         <div className="flex flex-col items-center">
           <div className="flex space-x-2 animate-bounce">
-            <div className="w-4 h-4 bg-blue-500 rounded-full" />
-            <div className="w-4 h-4 bg-blue-500 rounded-full" style={{ animationDelay: '0.2s' }} />
-            <div className="w-4 h-4 bg-blue-500 rounded-full" style={{ animationDelay: '0.4s' }} />
+            <div className="w-4 h-4 bg-text rounded-full" />
+            <div className="w-4 h-4 bg-text rounded-full" style={{ animationDelay: '0.2s' }} />
+            <div className="w-4 h-4 bg-text rounded-full" style={{ animationDelay: '0.4s' }} />
           </div>
-          <p className="text-2xl mt-6 text-blue-700 dark:text-blue-300">Loading...</p>
+          <p className="text-2xl mt-6 text-text dark:text-text-dark">Loading...</p>
         </div>
       </div>
     );
@@ -77,7 +77,7 @@ export default function Home() {
 
   // ログインしている場合とそうでない場合を三項演算子で分岐
   return session ? (
-    <div className="min-h-screen pb-16 overflow-x-hidden bg-amber-50 dark:bg-gray-700 max-w-screen">
+    <div className="min-h-screen pb-16 overflow-x-hidden bg-paper dark:bg-gray-700 max-w-screen">
       <Header label="logo" showBackButton={false} />
       <main className="flex flex-col space-y-8 mb-4">
         {/* テーマ切り替えボタン */}
