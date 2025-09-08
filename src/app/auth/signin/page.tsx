@@ -10,7 +10,7 @@ async function hashPassword(password: string) {
 }
 
 import { Button } from '@/components/ui/button';
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp';
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/inputOtp';
 import { useState } from 'react';
 import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
 import { LuBookOpen, LuArrowLeft } from 'react-icons/lu';
