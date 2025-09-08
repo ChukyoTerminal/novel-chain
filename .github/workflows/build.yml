@@ -40,3 +40,5 @@ jobs:
           npm ci
       - name: Run build
         run: npm run build:dev
+        env:
+          REDIS_URL: ${{ secrets.REDIS_URL }}

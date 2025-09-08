@@ -1,16 +1,16 @@
-import NextAuth from "next-auth"
-import { NextAuthOptions } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
-import { testUser } from "@/lib/mockData"
-import { User } from "@/types"
+import NextAuth from 'next-auth'
+import { NextAuthOptions } from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
+import { testUser } from '@/lib/mockData'
+import { User } from '@/types'
 
 const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: "credentials",
+      name: 'credentials',
       credentials: {
-        email: { label: "メールアドレス", type: "email" },
-        password: { label: "パスワード", type: "password" }
+        email: { label: 'メールアドレス', type: 'email' },
+        password: { label: 'パスワード', type: 'password' }
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -20,7 +20,7 @@ const authOptions: NextAuthOptions = {
         // モックデータから認証
         const user = (testUser as User).email === credentials.email ? testUser : null;
 
-        if (user && credentials.password === "password") {
+        if (user && credentials.password === 'password') {
           return {
             id: user.id,
             name: user.display_name,
@@ -37,7 +37,7 @@ const authOptions: NextAuthOptions = {
     signIn: '/auth/signin',
   },
   session: {
-    strategy: "jwt"
+    strategy: 'jwt'
   },
   callbacks: {
     async jwt({ token, user }) {

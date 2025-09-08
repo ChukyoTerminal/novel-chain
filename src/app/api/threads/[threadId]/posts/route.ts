@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { prisma } from '@/lib/prisma';
 import { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
