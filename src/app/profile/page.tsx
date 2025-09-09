@@ -10,7 +10,7 @@ import { LuUser, LuPencil as LuEdit, LuSettings, LuLogOut } from 'react-icons/lu
 import { useRouter } from 'next/navigation';
 import { useSession, signOut, signIn } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { User } from '@/types';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -29,22 +29,24 @@ export default function ProfilePage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      if (session?.user?.id) {
-        try {
-          const response = await fetch(`/api/users/${session.user.id}`);
-          if (response.ok) {
-            const user = await response.json();
-            setCurrentUser(user);
-          } else {
-            setCurrentUser(null);
-          }
-        } catch {
+    (async () => {
+      try {
+        if (!session?.user?.id) {
           setCurrentUser(null);
+          return;
         }
+        const response = await fetch(`/api/users/${session.user.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch user');
+        }
+        const data = await response.json();
+        console.log(data);
+        setCurrentUser(data as User);
+      } catch (e) {
+        console.error(e);
+        setCurrentUser(null);
       }
-    };
-    fetchUser();
+    })();
   }, [session]);
 
   const handleBackClick = () => {
@@ -101,8 +103,8 @@ export default function ProfilePage() {
             <CardHeader className="flex flex-row items-center space-y-0 pb-4">
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center overflow-hidden">
-                  <Image
-                    src={'/file.svg'}
+                  <img
+                    src={session?.user?.image || '/file.svg'}
                     alt="ユーザーアイコン"
                     width={64}
                     height={64}
@@ -149,17 +151,17 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                {currentUser.posts.length > 0 ? (
+                {currentUser.posts?.length > 0 ? (
                   `${currentUser.posts.length}件の投稿をしています。`
                 ) : (
                   'まだ投稿がありません。'
                 )}
-                {currentUser.threads.length > 0 && (
+                {currentUser.threads?.length > 0 && (
                   ` ${currentUser.threads.length}件のスレッドを作成しています。`
                 )}
               </p>
               <div className="flex flex-wrap gap-2">
-                {currentUser.threads.length > 0 ? (
+                {currentUser.threads?.length > 0 ? (
                   currentUser.threads
                     .flatMap(thread => thread.tags)
                     .filter((tag, index, array) => array.indexOf(tag) === index) // 重複削除
@@ -183,7 +185,7 @@ export default function ProfilePage() {
                 <CardTitle className="text-lg">作成スレッド数</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">{currentUser.threads.length}</p>
+                <p className="text-3xl font-bold">{currentUser.threads?.length}</p>
               </CardContent>
             </Card>
             <Card>
@@ -191,7 +193,7 @@ export default function ProfilePage() {
                 <CardTitle className="text-lg">総投稿数</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">{currentUser.posts.length}</p>
+                <p className="text-3xl font-bold">{currentUser.posts?.length}</p>
               </CardContent>
             </Card>
             <Card>
