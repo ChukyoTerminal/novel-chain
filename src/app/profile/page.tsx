@@ -15,6 +15,17 @@ import { User } from '@/types';
 export default function ProfilePage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  type User = {
+    id: string;
+    display_name: string;
+    email: string;
+    follower_count: number;
+    rating: number;
+    posts: { id: string }[];
+    comments: { id: string }[];
+    threads: { id: string; tags: string[] }[];
+  };
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -118,6 +129,23 @@ export default function ProfilePage() {
                 <Button variant="destructive" size="sm" onClick={handleLogout}>
                   <LuLogOut className="mr-2" size={16} />
                   ログアウト
+                </Button>
+                <Button variant="destructive" size="sm" onClick={async () => {
+                  if (!globalThis.confirm('本当にアカウントを削除しますか？この操作は元に戻せません。')) return;
+                  try {
+                    const response = await fetch(`/api/users/${currentUser.id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                      alert('アカウントを削除しました');
+                      await signOut({ redirect: false });
+                      router.push('/');
+                    } else {
+                      alert('削除に失敗しました');
+                    }
+                  } catch {
+                    alert('削除処理でエラーが発生しました');
+                  }
+                }}>
+                  アカウント削除
                 </Button>
               </div>
             </CardHeader>

@@ -139,6 +139,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
 
   const result = {
     name: user.name,
+    email: user.email,
     rating: userRating,
     display_name: user.displayName ?? '',
     follower_count: followerCount,
