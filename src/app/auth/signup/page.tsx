@@ -1,15 +1,15 @@
 'use client'
 /* eslint-disable max-len */
 
-
 import { Button } from '@/components/ui/button';
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/inputOtp';
 import { useState } from 'react';
 import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
-import { LuBookOpen, LuArrowLeft } from 'react-icons/lu';
+import { LuArrowLeft } from 'react-icons/lu';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { sha256sum } from '@/utils/hash';
+import Logo from '@/components/logo';
 
 async function handleGoogleSignIn() {
   await signIn('google');
@@ -83,15 +83,16 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-[var(--color-paper)] to-[#dfd0a7] dark:from-[#546072] dark:to-gray-700">
       {/* ヘッダー */}
       <header className="bg-white border-b shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-full mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
-            <LuArrowLeft size={20} className="text-gray-600" />
-            <LuBookOpen size={32} className="text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">NovelChain</h1>
+            <LuArrowLeft size={40} className="text-gray-600" />
           </Link>
+          <div className="flex mx-auto">
+            <Logo height={40} />
+          </div>
         </div>
       </header>
       <main className="max-w-md mx-auto px-4 py-16">
@@ -139,8 +140,8 @@ export default function SignUpPage() {
               <div className="text-center mt-6 pt-6 border-t">
                 <p className="text-sm text-gray-600">
                   既にアカウントをお持ちですか？{' '}
-                  <Link href="/auth/login" className="text-blue-600 hover:underline">
-                    ログイン
+                  <Link href="/auth/signin" className="text-blue-600 hover:underline">
+                    サインイン
                   </Link>
                 </p>
               </div>

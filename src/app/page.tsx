@@ -43,19 +43,19 @@ export default function Home() {
   // おすすめのスレッド（評価の高い順）
   const recommendedThreads = threads
     .filter(thread => thread.rating >= 90)
-    .sort((a, b) => b.rating - a.rating)
+    .toSorted((a, b) => b.rating - a.rating)
     .slice(0, 4);
 
   // 新着のスレッド（作成日時の新しい順）
   const newThreads = threads
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .toSorted((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 4);
 
   // タグ別にスレッドを分類
   const getThreadsByTag = (tag: string) => {
     return threads
       .filter(thread => thread.tags.includes(tag))
-      .sort((a, b) => b.rating - a.rating)
+      .toSorted((a, b) => b.rating - a.rating)
       .slice(0, 4);
   };
 
@@ -97,7 +97,7 @@ export default function Home() {
             <BookShelfSeparator width="400"/>
 
             {/* 最近更新された小説 */}
-            <section className="px-40 mx-auto">
+            <section className="px-40">
               <h2 className="text-2xl font-bold mb-4">最近更新された小説</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {newThreads.map((thread) => (

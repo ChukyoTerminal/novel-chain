@@ -11,6 +11,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       title: true,
       createdAt: true,
       updatedAt: true,
+      summary: true,
       tags: { select: { tag: { select: { name: true } } } },
       posts: { select: { ratings: { select: { score: true } } } },
       subscriptions: { select: { id: true } },
@@ -35,6 +36,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     id: thread.id,
     title: thread.title,
     tags: thread.tags.map(t => t.tag.name),
+    summary: thread.summary,
     rating,
     follower_count,
     owner: {

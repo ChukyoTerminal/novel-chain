@@ -16,11 +16,7 @@ export function ColorSchemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.dataset.theme = scheme;
-    if (scheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    document.documentElement.classList.toggle('dark', scheme === 'dark');
   }, [scheme]);
 
   const setScheme = (s: ColorScheme) => {

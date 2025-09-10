@@ -5,9 +5,10 @@ import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
-import { LuBookOpen, LuArrowLeft } from 'react-icons/lu';
+import { LuArrowLeft } from 'react-icons/lu';
 import Link from 'next/link';
 import { sha256sum } from '@/utils/hash';
+import Logo from '@/components/logo';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
@@ -31,15 +32,16 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-[var(--color-paper)] to-[#dfd0a7] dark:from-[#546072] dark:to-gray-700">
       {/* ヘッダー */}
       <header className="bg-white border-b shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-screen mx-auto px-4 py-4 flex items-center">
           <Link href="/" className="flex items-center space-x-2">
-            <LuArrowLeft size={20} className="text-gray-600" />
-            <LuBookOpen size={32} className="text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">NovelChain</h1>
+            <LuArrowLeft size={40} className="text-gray-600" />
           </Link>
+          <div className="flex mx-auto">
+            <Logo height={40} />
+          </div>
         </div>
       </header>
 
@@ -47,9 +49,9 @@ export default function SignInPage() {
       <main className="max-w-md mx-auto px-4 py-16">
         <Card className="p-6">
           <CardHeader className="text-center pb-6">
-            <CardTitle className="text-2xl">ログイン</CardTitle>
+            <CardTitle className="text-2xl">サインイン</CardTitle>
             <CardDescription>
-              NovelChainにログインしてリレー小説を楽しみましょう
+              NovelChainにサインインしてリレー小説を楽しみましょう
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -80,7 +82,7 @@ export default function SignInPage() {
             <div className="text-center mt-6 pt-6 border-t">
               <p className="text-sm text-gray-600">
                 アカウントをお持ちでない方は{' '}
-                <Link href="/auth/signin" className="text-blue-600 hover:underline">
+                <Link href="/auth/signup" className="text-blue-600 hover:underline">
                   新規登録
                 </Link>
               </p>

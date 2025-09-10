@@ -20,11 +20,68 @@ export default function WriteThreadPage() {
   const { threadId } = useParams();
   const [title, setTitle] = useState('続きの投稿');
 
+  // ローカルストレージのキー
+  const LOCAL_STORAGE_KEY = 'novel-chain-candidates';
+  const CONTINUATION_DRAFT_KEY = 'novel-chain-continuation-draft';
+
+  // ローカルストレージから候補を削除
+  const clearCandidatesFromStorage = () => {
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      console.log('[clearCandidatesFromStorage] 候補をローカルストレージから削除しました');
+    } catch (e) {
+      console.error('Failed to clear candidates from localStorage:', e);
+    }
+  };
+
+  // 続きの下書きをローカルストレージに保存
+  const saveContinuationDraftToStorage = (threadId: string, draftContent: string) => {
+    try {
+      const draft = { threadId, content: draftContent, timestamp: Date.now() };
+      localStorage.setItem(CONTINUATION_DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) {
+      console.error('Failed to save continuation draft to localStorage:', e);
+    }
+  };
+
+  // 続きの下書きをローカルストレージから取得
+  const getContinuationDraftFromStorage = (threadId: string) => {
+    try {
+      const stored = localStorage.getItem(CONTINUATION_DRAFT_KEY);
+      if (stored) {
+        const draft = JSON.parse(stored);
+        // 同じスレッドIDの下書きのみ返す
+        return draft.threadId === threadId ? draft : null;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  // 続きの下書きをローカルストレージから削除
+  const clearContinuationDraftFromStorage = () => {
+    try {
+      localStorage.removeItem(CONTINUATION_DRAFT_KEY);
+      console.log('[clearContinuationDraftFromStorage] 続きの下書きをローカルストレージから削除しました');
+    } catch (e) {
+      console.error('Failed to clear continuation draft from localStorage:', e);
+    }
+  };
+
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
     if (newContent.length <= maxLength) {
       setContent(newContent);
+      // 内容変更時に自動保存
+      if (typeof threadId === 'string') {
+        saveContinuationDraftToStorage(threadId, newContent);
+      }
     }
+  };
+
+  const handleOnBackClick = () => {
+    router.push('/');
   };
 
   const handleSubmit = async () => {
@@ -37,6 +94,9 @@ export default function WriteThreadPage() {
         body: JSON.stringify({ content }),
       });
       if (response.ok) {
+        // 投稿成功時にローカルストレージから候補と下書きを削除
+        clearCandidatesFromStorage();
+        clearContinuationDraftFromStorage();
         setModal({ open: true, message: '投稿しました！', success: true });
         setContent('');
         setTimeout(() => { setModal({ open: false, message: '', success: false }); router.push('/'); }, 1200);
@@ -60,6 +120,15 @@ export default function WriteThreadPage() {
       }
     }
     fetchThreadTitle();
+
+    // ページ読み込み時に下書きを復元
+    if (typeof threadId === 'string') {
+      const savedDraft = getContinuationDraftFromStorage(threadId);
+      if (savedDraft && savedDraft.content) {
+        setContent(savedDraft.content);
+        console.log('[復元] 続きの下書きを復元しました:', { content: savedDraft.content.length });
+      }
+    }
   }, [threadId]);
   
   return (
@@ -108,7 +177,7 @@ export default function WriteThreadPage() {
                         }
                     `
         }} />
-        <Header label={title} showBackButton={true} />
+        <Header label={title} showBackButton={true} onBackClick={ handleOnBackClick }/>
         <main className="flex px-4 gap-6 max-w-8xl mx-auto h-[calc(100vh-140px)] mb-8">
           <div className="w-80 flex-shrink-0" />
           <div className="flex-1 flex justify-center">

@@ -13,6 +13,7 @@ import { LuSend } from 'react-icons/lu';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useSession } from 'next-auth/react';
+import { User } from '@/types';
 
 export default function WritePage() {
   const [loadingCandidates, setLoadingCandidates] = useState(true);
@@ -25,6 +26,68 @@ export default function WritePage() {
   const maxLength = 500;
   const router = useRouter();
   const { data: session,status }=useSession();
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+
+  // ローカルストレージのキー
+  const LOCAL_STORAGE_KEY = 'novel-chain-candidates';
+  const DRAFT_STORAGE_KEY = 'novel-chain-new-draft';
+
+  // ローカルストレージから候補を取得
+  const getCandidatesFromStorage = (): Thread[] => {
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  // ローカルストレージに候補を保存
+  const saveCandidatesToStorage = (candidates: Thread[]) => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(candidates));
+    } catch (e) {
+      console.error('Failed to save candidates to localStorage:', e);
+    }
+  };
+
+  // ローカルストレージから候補を削除
+  const clearCandidatesFromStorage = () => {
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    } catch (e) {
+      console.error('Failed to clear candidates from localStorage:', e);
+    }
+  };
+
+  // 下書きをローカルストレージに保存
+  const saveDraftToStorage = (draftTitle: string, draftContent: string) => {
+    try {
+      const draft = { title: draftTitle, content: draftContent, timestamp: Date.now() };
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    } catch (e) {
+      console.error('Failed to save draft to localStorage:', e);
+    }
+  };
+
+  // 下書きをローカルストレージから取得
+  const getDraftFromStorage = () => {
+    try {
+      const stored = localStorage.getItem(DRAFT_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  // 下書きをローカルストレージから削除
+  const clearDraftFromStorage = () => {
+    try {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+    } catch (e) {
+      console.error('Failed to clear draft from localStorage:', e);
+    }
+  };
 
   useEffect(() => {
     const fetchThreads = async () => {
@@ -39,11 +102,38 @@ export default function WritePage() {
       }
     };
     fetchThreads();
+
+    // ページ読み込み時に下書きを復元
+    const savedDraft = getDraftFromStorage();
+    if (savedDraft && (savedDraft.title || savedDraft.content)) {
+      setTitle(savedDraft.title || '');
+      setContent(savedDraft.content || '');
+      console.log('[復元] 下書きを復元しました:', { title: savedDraft.title?.length || 0, content: savedDraft.content?.length || 0 });
+    }
   }, []);
 
   useEffect(() => {
     // ログ出力関数
     const log = (message: string) => { console.log(message); };
+
+    (async () => {
+      try {
+        if (!session?.user?.id) {
+          setCurrentUser(null);
+          return;
+        }
+        const response = await fetch(`/api/users/${session.user.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch user');
+        }
+        const data = await response.json();
+        console.log(data);
+        setCurrentUser(data as User);
+      } catch (e) {
+        console.error(e);
+        setCurrentUser(null);
+      }
+    })();
 
     // スレッド候補判定サブルーチン
     const isThreadCandidate = async (thread: Thread, userId: string) => {
@@ -104,6 +194,19 @@ export default function WritePage() {
 
     const filterThreads = async () => {
       setLoadingCandidates(true);
+      
+      // まずローカルストレージから候補を確認
+      const storedCandidates = getCandidatesFromStorage();
+      if (storedCandidates.length > 0) {
+        console.log('[filterThreads] ローカルストレージから候補を取得:', storedCandidates.length, '件');
+        setFilteredThreads(storedCandidates);
+        setLoadingCandidates(false);
+        return;
+      }
+
+      // ローカルストレージに候補がない場合は新しく取得
+      console.log('[filterThreads] ローカルストレージに候補がないため、新しく取得します');
+      
       // ユーザー情報取得（NextAuth）
       const userId = session?.user?.id;
       log('[filterThreads] 現在のユーザーID:' + userId);
@@ -114,20 +217,37 @@ export default function WritePage() {
           filtered.push(thread);
         }
       }
-      setFilteredThreads(filtered);
+      
+      // 候補を最大3つに制限（ランダムに選択）
+      const maxCandidates = 3;
+      const finalCandidates = filtered.length > maxCandidates 
+        // eslint-disable-next-line sonarjs/pseudo-random
+        ? filtered.toSorted(() => Math.random() - 0.5).slice(0, maxCandidates)
+        : filtered;
+      
+      // 新しく取得した候補をローカルストレージに保存
+      saveCandidatesToStorage(finalCandidates);
+      console.log('[filterThreads] 新しい候補をローカルストレージに保存:', finalCandidates.length, '件 (全', filtered.length, '件中)');
+      
+      setFilteredThreads(finalCandidates);
       setLoadingCandidates(false);
     };
     if (threads.length > 0) filterThreads();
   }, [threads, session]);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    // タイトル変更時に自動保存
+    saveDraftToStorage(newTitle, content);
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
     if (newContent.length <= maxLength) {
       setContent(newContent);
+      // 内容変更時に自動保存
+      saveDraftToStorage(title, newContent);
     }
   };
 
@@ -141,6 +261,10 @@ export default function WritePage() {
         body: JSON.stringify({ title, content }),
       });
       if (response.ok) {
+        // 新規投稿成功時にローカルストレージから候補と下書きを削除
+        clearCandidatesFromStorage();
+        clearDraftFromStorage();
+        console.log('[handleSubmit] 新規投稿成功後、候補と下書きをクリア');
         alert('新規小説を投稿しました！');
         setTitle('');
         setContent('');
@@ -195,11 +319,11 @@ export default function WritePage() {
       {/* モーダル風スレッド選択 */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20">
-          <div className="bg-white rounded-lg shadow-lg p-8 w-fit">
+          <div className="bg-[#fffeee] rounded-lg shadow-lg p-8 w-fit">
             <h1 className="text-xl font-bold mb-4">続きを書く小説を選択</h1>
-            <p className="text-muted-foreground mb-4">傾向からランダムに3件表示しています</p>
+            <p className="text-muted-foreground mb-4">傾向からランダムに表示しています</p>
             <div className="flex flex-row gap-4 mb-4 min-h-[120px] items-center justify-center">
-              {loadingCandidates && status == 'loading' ? (
+              {(loadingCandidates || status == 'loading') && session && currentUser ? (
                 <div className="flex w-full justify-center items-center">
                   <div className="flex gap-2">
                     <span className="block w-4 h-4 bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
@@ -208,34 +332,39 @@ export default function WritePage() {
                   </div>
                 </div>
               // eslint-disable-next-line sonarjs/no-nested-conditional
-              ) : (filteredThreads.length > 0 ? (
-                [...filteredThreads]
-                  // eslint-disable-next-line sonarjs/pseudo-random
-                  .sort(() => Math.random() - 0.5)
-                  .slice(0, 3)
-                  .map(thread => (
-                    <div key={thread.id} className="flex flex-col items-stretch max-w-64 min-w-64 min-h-[250px] max-h-[250px] bg-gray-50 border rounded-lg shadow p-4">
-                      <div className="font-bold text-lg mb-2 truncate" title={thread.title}>
-                        {thread.title.length > 24 ? thread.title.slice(0, 24) + '…' : thread.title}
-                      </div>
-                      <div className="text-sm text-gray-600 mb-4 line-clamp-3">{thread.summary}</div>
-                      <Button
-                        className="w-full mt-auto"
-                        variant="outline"
-                        size="lg"
-                        onClick={async () => { setShowModal(false); router.push(`/write/${thread.id}`); }}
-                      >
-                        この小説の続きを書く
-                      </Button>
+              ) : (session && currentUser && filteredThreads.length > 0 ? (
+                filteredThreads.map(thread => (
+                  <div key={thread.id} className="flex flex-col items-stretch max-w-64 min-w-64 min-h-[250px] max-h-[250px] bg-gray-50 border rounded-lg shadow p-4">
+                    <div className="font-bold text-lg mb-2 truncate" title={thread.title}>
+                      {thread.title.length > 24 ? thread.title.slice(0, 24) + '…' : thread.title}
                     </div>
-                  ))
+                    <div className="text-sm text-gray-600 mb-4 line-clamp-3">{thread.summary}</div>
+                    <Button
+                      className="w-full mt-auto"
+                      variant="outline"
+                      size="lg"
+                      onClick={async () => { 
+                        clearCandidatesFromStorage();
+                        clearDraftFromStorage();
+                        console.log('[Button] 候補選択後、ローカルストレージと下書きをクリア');
+                        setShowModal(false); 
+                        router.push(`/write/${thread.id}`); 
+                      }}
+                    >
+                      この小説の続きを書く
+                    </Button>
+                  </div>
+                ))
               ) : (
                 <p>{session ? '表示できる小説がありません' : 'ログインしてください'}</p>
               ))}
             </div>
             {session && (
               <div className="text-center">
-                <Button onClick={() => { setShowModal(false); setShowNewForm(true); }} size="super" className="px-8 py-3">
+                <Button onClick={() => { 
+                  setShowModal(false); 
+                  setShowNewForm(true); 
+                }} size="super" className="px-8 py-3">
                   新しい物語を始める
                 </Button>
               </div>

@@ -1,11 +1,14 @@
 /* eslint-disable max-len */
 import { Button } from '@/components/ui/button';
-import { LuHouse as LuHome, LuPenTool, LuUser } from 'react-icons/lu';
+import { LuHouse as LuHome, LuPenTool } from 'react-icons/lu';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export function Footer() {
   const pathname = usePathname();
+
+  const { data: session } = useSession();
 
   const isActive = (path: string) => {
     if (path === '/' && pathname === '/') return true;
@@ -55,7 +58,13 @@ export function Footer() {
             >
               <div className='relative'>
                 <div className='w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center'>
-                  <LuUser size={48} />
+                  <img
+                    src={session?.user?.image || '/user.png'}
+                    alt="ユーザーアイコン"
+                    width={64}
+                    height={64}
+                    className="rounded-full object-cover"
+                  />
                 </div>
               </div>
             </Button>

@@ -10,7 +10,6 @@ import { LuUser, LuPencil as LuEdit, LuSettings, LuLogOut } from 'react-icons/lu
 import { useRouter } from 'next/navigation';
 import { useSession, signOut, signIn } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { User } from '@/types';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -104,7 +103,7 @@ export default function ProfilePage() {
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center overflow-hidden">
                   <img
-                    src={session?.user?.image || '/file.svg'}
+                    src={session?.user?.image || '/user.png'}
                     alt="ユーザーアイコン"
                     width={64}
                     height={64}
